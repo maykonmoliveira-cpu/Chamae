@@ -1,0 +1,20 @@
+{
+  "name": "chamae-web-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chamaê - versão Web e Android com Capacitor",
+  "scripts": {
+    "web": "npx serve www",
+    "build": "echo 'O MVP atual é HTML estático; os arquivos web estão em www/'",
+    "cap:sync": "npx cap sync",
+    "android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/android": "^7.4.3",
+    "serve": "^14.2.4"
+  }
+}
