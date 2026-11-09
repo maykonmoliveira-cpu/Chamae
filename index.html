@@ -66,4 +66,5 @@ function clearDemo(){if(confirm('Apagar favoritos, histórico e dados locais des
 function render(){const views={home,orders,favorites:favoritesPage,chat,provider:providerArea,profile};$('app').innerHTML=(views[state.tab]||home)();document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.tab));save()}
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{state.tab=b.dataset.tab;state.selected=null;save();render()}));render();
 </script><script>if("serviceWorker" in navigator && location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </body></html>
