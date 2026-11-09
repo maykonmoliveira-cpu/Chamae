@@ -1,70 +1,765 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#124B91"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Chamaê"><meta name="description" content="Encontre e contrate profissionais com o Chamaê."><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="assets/icon-192.png"><title>Chamaê — MVP integrado</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#124B91">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chamaê">
+<title>Chamaê — MVP conectado</title>
 <style>
 :root{--blue:#124B91;--orange:#F07822;--bg:#F4F7FB;--muted:#65758B;--line:#E3EAF2;--green:#168653}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172B45}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172B45}
 header{background:#fff;padding:13px 17px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:4;box-shadow:0 1px 5px #0001}
-.logo{font-size:27px;font-weight:950;color:var(--blue);letter-spacing:-1px}.logo span{color:var(--orange)}.city{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--muted)}
-main{padding:17px 15px 110px;max-width:720px;margin:auto}h1{font-size:24px;margin:8px 0 4px;font-weight:900}h2{font-size:17px;margin:20px 0 8px}.sub{font-size:13px;color:var(--muted);line-height:1.5;margin:5px 0 12px}
-input,select,textarea{width:100%;padding:13px;border:1px solid #DCE4EF;border-radius:12px;font-size:16px;background:white;margin:7px 0;color:#172B45}textarea{min-height:78px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.chip{border:0;border-radius:22px;background:#EAF1FA;color:var(--blue);font-weight:750;padding:9px 13px}
-.card{background:white;border:1px solid var(--line);border-radius:17px;padding:15px;margin:12px 0}.row{display:flex;align-items:center;gap:12px}.avatar{width:48px;height:48px;border-radius:50%;background:#E7F0FF;color:var(--blue);display:grid;place-items:center;font-size:21px;font-weight:900;flex-shrink:0}.name{font-weight:850}.rating{font-size:12px;color:#A66A10;margin-top:6px}.price{font-weight:900;color:var(--blue);margin-top:8px}.between{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
-button{font:inherit;cursor:pointer}.action{width:100%;border:0;border-radius:12px;padding:13px;background:var(--blue);color:white;font-weight:850;margin-top:9px}.secondary{background:#EAF1FA;color:var(--blue)}.orange{background:var(--orange);color:white}.link{border:0;background:none;color:var(--orange);font-weight:800;padding:8px 2px}
+.logo{font-size:27px;font-weight:950;color:var(--blue)}
+.logo span{color:var(--orange)}
+.city{font-size:10px;font-weight:800;color:var(--muted)}
+main{padding:17px 15px 110px;max-width:720px;margin:auto}
+h1{font-size:24px;margin:8px 0 4px;font-weight:900}
+h2{font-size:17px;margin:20px 0 8px}
+.sub{font-size:13px;color:var(--muted);line-height:1.5;margin:5px 0 12px}
+input,select,textarea{width:100%;padding:13px;border:1px solid #DCE4EF;border-radius:12px;font-size:16px;background:white;margin:7px 0;color:#172B45}
+textarea{min-height:78px}
+.card{background:white;border:1px solid var(--line);border-radius:17px;padding:15px;margin:12px 0}
+.row{display:flex;align-items:center;gap:12px}
+.avatar{width:48px;height:48px;border-radius:50%;background:#E7F0FF;color:var(--blue);display:grid;place-items:center;font-size:21px;font-weight:900;flex-shrink:0}
+.name{font-weight:850}
+.rating{font-size:12px;color:#A66A10;margin-top:6px}
+.price{font-weight:900;color:var(--blue);margin-top:8px}
+.between{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer}
+.action{width:100%;border:0;border-radius:12px;padding:13px;background:var(--blue);color:white;font-weight:850;margin-top:9px}
+.secondary{background:#EAF1FA;color:var(--blue)}
+.orange{background:var(--orange);color:white}
+.link{border:0;background:none;color:var(--orange);font-weight:800;padding:8px 2px}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 2px calc(9px + env(safe-area-inset-bottom));z-index:5;overflow-x:auto}
-nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weight:850;padding:7px 5px;white-space:nowrap}nav button.active{color:var(--blue)}
+nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weight:850;padding:7px 5px;white-space:nowrap}
+nav button.active{color:var(--blue)}
 .small{font-size:10px;color:#8794A5;text-align:center;background:white;padding:5px 0 8px}
-.option{display:block;width:100%;text-align:left;background:white;border:1px solid #E1E7EF;border-radius:12px;padding:13px;margin:8px 0}.option.selected{border:2px solid var(--blue);background:#EDF4FF}
-.tag{display:inline-block;border-radius:20px;background:#EDF4FF;color:var(--blue);padding:5px 9px;font-size:11px;font-weight:800}.green{color:var(--green)}.chat{background:#EAF1FA;border-radius:12px;padding:11px;margin:8px 0;max-width:90%;overflow-wrap:anywhere}.chat.mine{margin-left:auto;background:#E7F7EE}.muted{color:var(--muted)}.metric{font-size:32px;font-weight:950;color:var(--blue)}.bar{height:8px;background:#E5EAF1;border-radius:8px;overflow:hidden}.bar span{display:block;height:100%;background:#20A464}
-.hidden{display:none}.notice{padding:11px;border-radius:12px;background:#FFF6E8;color:#84500B;font-size:12px;line-height:1.45;margin:12px 0}.stars button{font-size:28px;border:0;background:none;color:#D6DDE7;padding:3px}.stars button.on{color:#F2A900}
-</style><style>@media(min-width:900px){main{max-width:1080px;padding:28px 28px 110px}#app{display:block}nav{justify-content:center;gap:30px}nav button{font-size:13px;padding:10px 14px}.card{padding:20px}}</style>
+.chip{border:0;border-radius:22px;background:#EAF1FA;color:var(--blue);font-weight:750;padding:9px 13px;margin:4px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+.tag{display:inline-block;border-radius:20px;background:#EDF4FF;color:var(--blue);padding:5px 9px;font-size:11px;font-weight:800}
+.chat{background:#EAF1FA;border-radius:12px;padding:11px;margin:8px 0;max-width:90%;overflow-wrap:anywhere}
+.chat.mine{margin-left:auto;background:#E7F7EE}
+.notice{padding:11px;border-radius:12px;background:#FFF6E8;color:#84500B;font-size:12px;line-height:1.45;margin:12px 0}
+.error{color:#B42318;background:#FEF3F2;padding:10px;border-radius:10px;font-size:13px}
+.success{color:#067647;background:#ECFDF3;padding:10px;border-radius:10px;font-size:13px}
+.option{display:block;width:100%;text-align:left;background:white;border:1px solid #E1E7EF;border-radius:12px;padding:13px;margin:8px 0}
+.option.selected{border:2px solid var(--blue);background:#EDF4FF}
+@media(min-width:900px){
+main{max-width:1080px;padding:28px 28px 110px}
+nav{justify-content:center;gap:30px}
+nav button{font-size:13px;padding:10px 14px}
+.card{padding:20px}
+}
+</style>
 </head>
 <body>
-<header><div class="logo">chama<span>ê</span></div><div class="city">JOINVILLE • SC</div></header>
-<main id="app"></main>
+<header>
+<div class="logo">chama<span>ê</span></div>
+<div class="city">JOINVILLE • SC</div>
+</header>
+<main id="app"><p>Carregando Chamaê...</p></main>
 <nav>
-<button data-tab="home" class="active">Início</button><button data-tab="orders">Serviços</button><button data-tab="favorites">Favoritos</button><button data-tab="chat">Chat</button><button data-tab="provider">Área profissional</button><button data-tab="profile">Perfil</button>
-</nav><div class="small">MVP integrado demonstrativo • sem transações reais</div>
- <script>
-const providers=[
-{id:'p1',name:'Ana Serviços',cat:'Diarista',area:'América',rating:4.9,half:120,full:200,about:'Limpeza residencial e organização.',available:true},
-{id:'p2',name:'Carlos Eletricista',cat:'Eletricista',area:'Centro',rating:4.8,half:160,full:280,about:'Instalações e pequenos reparos.',available:true},
-{id:'p3',name:'Marina Nails',cat:'Manicure',area:'Atiradores',rating:5.0,half:90,full:150,about:'Manicure, pedicure e cuidados.',available:true},
-{id:'p4',name:'João Hidráulica',cat:'Encanador',area:'Costa e Silva',rating:4.9,half:150,full:260,about:'Reparos hidráulicos e instalações.',available:true}
-];
-const $=id=>document.getElementById(id), money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const read=(k,d)=>{try{return JSON.parse(localStorage.getItem('chamae_'+k))??d}catch{return d}};
-let state=read('state',{tab:'home',role:'Cliente',query:'',selected:null,duration:'half',tip:0,booking:null,status:'Aguardando confirmação',progress:7,messages:[],favorites:[],history:[],rating:0});
-function save(){localStorage.setItem('chamae_state',JSON.stringify(state))}
-function card(x){return `<section class="card">${x}</section>`}
-function btn(label,fn,kind=''){return `<button class="action ${kind}" onclick="${fn}">${label}</button>`}
-function providerById(id){return providers.find(p=>p.id===id)}
-function home(){
- const q=state.query.toLowerCase(),list=providers.filter(p=>(p.name+' '+p.cat+' '+p.area).toLowerCase().includes(q));
- let out=`<h1>${state.role==='Cliente'?'Encontre profissionais':'Prévia do marketplace'}</h1><p class="sub">Serviços e profissionais perto de você!</p>`;
- out+=`<input placeholder="Buscar serviço, profissional ou bairro" value="${state.query.replaceAll('"','&quot;')}" oninput="state.query=this.value;save();render()">`;
- out+=`<div class="chips">${['Diarista','Manicure','Eletricista','Encanador'].map(c=>`<button class="chip" onclick="state.query='${c}';save();render()">${c}</button>`).join('')}<button class="chip" onclick="state.query='';save();render()">Todos</button></div>`;
- if(state.selected){const p=providerById(state.selected);if(!p){state.selected=null;save()}else return out+profileCard(p)}
- return out+(list.length?list.map(p=>card(`<div class="row"><div class="avatar">${p.name[0]}</div><div><div class="name">${p.name}</div><div class="sub">${p.cat} · ${p.area}, Joinville</div><div class="rating">★ ${p.rating.toFixed(1)} · ${p.about}</div></div></div><div class="between"><span class="price">A partir de ${money(Math.min(p.half,p.full))}</span><div><button class="link" onclick="toggleFavorite('${p.id}')">${state.favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}</button><button class="link" onclick="selectProvider('${p.id}')">Ver perfil ›</button></div></div>`)).join(''):card('<p class="sub">Nenhum profissional encontrado. Tente outra busca.</p>'));
+<button data-tab="home" class="active">Início</button>
+<button data-tab="orders">Serviços</button>
+<button data-tab="favorites">Favoritos</button>
+<button data-tab="chat">Chat</button>
+<button data-tab="provider">Área profissional</button>
+<button data-tab="profile">Perfil</button>
+</nav>
+<div class="small">Chamaê • MVP em testes</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+const SUPABASE_URL='https://rteeynlktogwjbjxezwr.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_p1JjWeb5D4l-TIGIKK5e8w_5z5j4_V6';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+let session=null,user=null,profile=null,tab='home',selected=null;
+let duration='half',tip=0,providers=[],bookings=[];
+let activeBooking=null,messages=[],realtime=null;
+let favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');
+
+function card(s){return `<section class="card">${s}</section>`}
+function btn(t,fn,k=''){return `<button class="action ${k}" onclick="${fn}">${t}</button>`}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function msg(s,kind='notice'){return `<div class="${kind}">${esc(s)}</div>`}
+
+async function init(){
+if(!window.supabase){
+$('app').innerHTML=msg('Não foi possível carregar a biblioteca do Supabase. Verifique sua conexão.','error');
+return;
 }
-function profileCard(p){return card(`<button class="link" onclick="state.selected=null;save();render()">‹ Voltar aos resultados</button><div class="row"><div class="avatar">${p.name[0]}</div><div><h1>${p.name}</h1><div class="sub">${p.cat} · ${p.area}, Joinville</div><div class="rating">★ ${p.rating.toFixed(1)}</div></div></div><p class="sub">${p.about}</p><button class="link" onclick="toggleFavorite('${p.id}')">${state.favorites.includes(p.id)?'♥ Remover dos favoritos':'♡ Adicionar aos favoritos'}</button><h2>Escolha a modalidade</h2><button class="option ${state.duration==='half'?'selected':''}" onclick="state.duration='half';save();render()">Meia diária · até 4 horas <b class="price">${money(p.half)}</b></button><button class="option ${state.duration==='full'?'selected':''}" onclick="state.duration='full';save();render()">Diária completa · até 8 horas <b class="price">${money(p.full)}</b></button><label class="sub">Data pretendida</label><input id="date" type="date"><label class="sub">Observações do serviço</label><textarea id="notes" placeholder="Conte o que precisa ser feito (opcional)"></textarea><h2>Gorjeta opcional</h2><div class="chips">${[0,5,10,15,20].map(v=>`<button class="chip" onclick="state.tip=${v};save();render()">${v}% ${state.tip===v?'✓':''}</button>`).join('')}</div><p class="sub">Total estimado: <b>${money((state.duration==='half'?p.half:p.full)*(1+state.tip/100))}</b></p>${btn('Solicitar serviço','createBooking()')}<p class="notice">Solicitação demonstrativa. A disponibilidade e a contratação ainda não são confirmadas por um prestador real.</p>`)}
-function selectProvider(id){state.selected=id;state.duration='half';state.tip=0;save();render()}
-function toggleFavorite(id){state.favorites=state.favorites.includes(id)?state.favorites.filter(x=>x!==id):[...state.favorites,id];save();render()}
-function createBooking(){const p=providerById(state.selected);if(!p)return;const base=state.duration==='half'?p.half:p.full;const date=$('date')?.value||'';const notes=$('notes')?.value||'';state.booking={id:'CH-'+Math.floor(10000+Math.random()*89999),providerId:p.id,provider:p.name,service:p.cat,duration:state.duration==='half'?'Meia diária · até 4 horas':'Diária completa · até 8 horas',date,notes,base,tip:base*state.tip/100,total:base*(1+state.tip/100),created:new Date().toISOString()};state.history.push({...state.booking});state.status='Solicitação enviada';state.selected=null;state.tab='orders';save();render();alert('Solicitação demonstrativa criada. Nenhum prestador foi notificado e nenhum pagamento foi realizado.')}
-function orders(){let b=state.booking;return `<h1>Meus serviços</h1><p class="sub">Acompanhe a contratação e o histórico.</p>`+(b?card(`<div class="between"><b>${b.service} · ${b.provider}</b><span class="tag">${state.status}</span></div><p class="sub">Código ${b.id} · ${b.duration}${b.date?' · '+b.date:''}</p><p class="sub">${b.notes||'Sem observações adicionais.'}</p><div class="price">Total demonstrativo: ${money(b.total)}</div><p class="sub">Gorjeta opcional: ${money(b.tip)}</p>${state.role==='Prestador'?btn('Aceitar solicitação',"setStatus('Aceita')")+btn('Iniciar serviço',"setStatus('Em andamento')",'secondary')+btn('Finalizar serviço',"setStatus('Aguardando confirmação do cliente')",'secondary'):btn('Confirmar conclusão',"setStatus('Concluído')")+btn('Relatar problema',"setStatus('Em análise pelo suporte')",'secondary')}${btn('Chamar este prestador novamente',"rebookProvider('"+b.providerId+"')",'secondary')}${state.status==='Concluído'?`<h2>Avalie o serviço</h2><div class="stars">${[1,2,3,4,5].map(n=>`<button class="${state.rating>=n?'on':''}" onclick="state.rating=${n};save();render()">★</button>`).join('')}</div>${btn('Enviar avaliação', "submitRating()")}`:''}`):card('<p class="sub">Você ainda não possui serviços nesta demonstração.</p>'))+`<h2>Histórico</h2>`+(state.history.length?state.history.slice().reverse().map(h=>card(`<b>${h.provider}</b><p class="sub">${h.service} · ${h.duration} · ${money(h.total)}</p><button class="link" onclick="rebookProvider('${h.providerId}')">Chamar novamente ›</button>`)).join(''):card('<p class="sub">Seus serviços anteriores aparecerão aqui.</p>'))}
-function setStatus(s){state.status=s;save();render()}
-function submitRating(){if(!state.rating){alert('Selecione de 1 a 5 estrelas.');return}const p=providerById(state.booking?.providerId);if(p)p.rating=Number(((p.rating+state.rating)/2).toFixed(1));alert('Avaliação registrada apenas nesta demonstração.');save();render()}
-function rebookProvider(id){if(!providerById(id)){alert('Prestador não encontrado nesta demonstração.');return}state.selected=id;state.tab='home';state.duration='half';state.tip=0;save();render()}
-function favoritesPage(){const list=providers.filter(p=>state.favorites.includes(p.id));return `<h1>Favoritos</h1><p class="sub">Seus profissionais de confiança.</p>`+(list.length?list.map(p=>card(`<div class="row"><div class="avatar">${p.name[0]}</div><div><b>${p.name}</b><div class="sub">${p.cat} · ${p.area}</div><div class="rating">★ ${p.rating.toFixed(1)}</div></div></div><div class="between"><b class="price">A partir de ${money(Math.min(p.half,p.full))}</b><button class="link" onclick="toggleFavorite('${p.id}')">Remover</button></div>${btn('Chamar novamente',"rebookProvider('"+p.id+"')")}`)).join(''):card('<p class="sub">Nenhum favorito salvo. Adicione profissionais pela busca.</p>'))}
-function chat(){return `<h1>Chat do serviço</h1><p class="sub">Mensagens demonstrativas vinculadas à contratação atual.</p>`+(state.booking?card((state.messages.length?state.messages:[{text:'Olá! Use este espaço para combinar os detalhes do serviço.',mine:false}]).map(m=>`<div class="chat ${m.mine?'mine':''}">${m.text}</div>`).join('')+`<input id="msg" placeholder="Digite uma mensagem"><button class="action" onclick="sendMessage()">Enviar</button>`):card('<p class="sub">Faça uma solicitação para habilitar a conversa demonstrativa.</p>'))}
-function sendMessage(){let el=$('msg');if(el&&el.value.trim()){state.messages.push({text:el.value.trim(),mine:true});save();render()}}
-function providerArea(){let b=state.booking;return `<h1>Área profissional</h1><p class="sub">Visão demonstrativa do prestador.</p>${card(`<div class="between"><b>Perfil profissional</b><span class="tag">Modo demonstração</span></div><p class="sub">Alterne entre Cliente e Prestador na aba Perfil para visualizar ações diferentes na contratação.</p><div class="metric">${state.progress}/10</div><p class="sub">Serviços elegíveis para o próximo marco de fidelidade</p><div class="bar"><span style="width:${state.progress*10}%"></span></div>${btn('Simular serviço concluído com 5 estrelas',"state.progress=Math.min(10,state.progress+1);save();render()",'secondary')}${state.progress>=10?'<p class="green">Marco de fidelidade atingido: bônus demonstrativo de 10%.</p>':''}`)}${b?card(`<b>Solicitação atual</b><p class="sub">${b.provider} · ${b.service} · ${state.status}</p>${btn('Ver serviço','state.tab="orders";save();render()')}`):card('<p class="sub">As solicitações recebidas aparecerão aqui quando houver integração com backend.</p>')}`}
-function profile(){return `<h1>Perfil e configurações</h1>${card(`<b>Tipo de acesso</b><p class="sub">Escolha a visualização de demonstração.</p><div class="chips"><button class="chip" onclick="state.role='Cliente';save();render()">Cliente ${state.role==='Cliente'?'✓':''}</button><button class="chip" onclick="state.role='Prestador';save();render()">Prestador ${state.role==='Prestador'?'✓':''}</button></div>`)}${card(`<b>Dados da demonstração</b><p class="sub">Joinville e região · Perfil de ${state.role}</p>${btn('Limpar dados locais',"clearDemo()",'secondary')}`)}<p class="notice">Esta versão não possui cadastro, login, verificação de identidade ou sincronização entre aparelhos.</p>`}
-function clearDemo(){if(confirm('Apagar favoritos, histórico e dados locais desta demonstração?')){localStorage.removeItem('chamae_state');state={tab:'home',role:'Cliente',query:'',selected:null,duration:'half',tip:0,booking:null,status:'Aguardando confirmação',progress:7,messages:[],favorites:[],history:[],rating:0};render()}}
-function render(){const views={home,orders,favorites:favoritesPage,chat,provider:providerArea,profile};$('app').innerHTML=(views[state.tab]||home)();document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.tab));save()}
-document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{state.tab=b.dataset.tab;state.selected=null;save();render()}));render();
-</script><script>if("serviceWorker" in navigator && location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</body></html>
+const {data}=await db.auth.getSession();
+session=data.session;
+user=session?.user||null;
+if(user)await loadProfile();
+await loadProviders();
+if(user)await loadBookings();
+render();
+}
+
+async function loadProfile(){
+const {data,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();
+if(error){console.error(error);return;}
+profile=data;
+}
+
+async function ensureProfile(fullName='',phone='',role=null){
+if(!user)return;
+const metadata=user.user_metadata||{};
+const requestedRole=role||profile?.role||metadata.role||'cliente';
+const normalizedRole=requestedRole==='provider'?'prestador':requestedRole==='client'?'cliente':requestedRole;
+const safeRole=['cliente','prestador'].includes(normalizedRole)?normalizedRole:'cliente';
+const payload={
+id:user.id,
+full_name:fullName||profile?.full_name||metadata.full_name||user.email?.split('@')[0]||'Usuário',
+phone:phone||profile?.phone||metadata.phone||null,
+role:safeRole
+};
+const {data,error}=await db.from('profiles').upsert(payload,{onConflict:'id'}).select().single();
+if(error)throw error;
+profile=data;
+}
+
+async function loadProviders(){
+const {data,error}=await db.from('providers')
+.select('id,user_id,name,category,area,rating,half_day_price,full_day_price,about,available')
+.eq('available',true).order('created_at',{ascending:false});
+if(error){console.error(error);providers=[];}
+else providers=data||[];
+}
+
+async function loadBookings(){
+const {data,error}=await db.from('bookings').select('*').order('created_at',{ascending:false});
+if(error){console.error(error);bookings=[];}
+else bookings=data||[];
+}
+
+function authView(){
+return `
+<h1>Bem-vindo ao Chamaê</h1>
+<p class="sub">Entre ou crie sua conta para contratar serviços ou oferecer seu trabalho.</p>
+${card(`
+<h2>Entrar</h2>
+<input id="loginEmail" type="email" autocomplete="email" placeholder="Seu e-mail">
+<input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha">
+${btn('Entrar','login()')}
+<hr>
+<h2>Criar conta</h2>
+<input id="newName" placeholder="Nome completo">
+<input id="newPhone" placeholder="Telefone">
+<input id="newEmail" type="email" placeholder="E-mail">
+<input id="newPass" type="password" minlength="6" placeholder="Senha (mínimo 6 caracteres)">
+<select id="newRole">
+<option value="cliente">Quero contratar serviços</option>
+<option value="prestador">Quero oferecer serviços</option>
+</select>
+${btn('Criar minha conta','signup()','orange')}
+<p class="sub">Se a confirmação de e-mail estiver ativada, confirme o endereço recebido antes de entrar.</p>
+`)}
+`;
+}
+
+async function login(){
+const email=$('loginEmail').value.trim();
+const password=$('loginPass').value;
+if(!email||!password)return alert('Informe e-mail e senha.');
+const {data,error}=await db.auth.signInWithPassword({email,password});
+if(error)return alert(error.message);
+session=data.session;
+user=data.user;
+await loadProfile();
+if(!profile){
+try{await ensureProfile();}
+catch(e){return alert('Login realizado, mas não foi possível criar seu perfil: '+e.message);}
+}
+await loadProviders();
+await loadBookings();
+tab='home';
+render();
+}
+
+async function signup(){
+const full_name=$('newName').value.trim();
+const phone=$('newPhone').value.trim();
+const email=$('newEmail').value.trim();
+const password=$('newPass').value;
+const role=$('newRole').value;
+if(!full_name||!email||password.length<6)
+return alert('Preencha nome, e-mail e senha com pelo menos 6 caracteres.');
+if(!['cliente','prestador'].includes(role))
+return alert('Selecione um tipo de conta válido.');
+const {data,error}=await db.auth.signUp({
+email,password,
+options:{data:{full_name,phone,role}}
+});
+if(error)return alert(error.message);
+if(data.session){
+session=data.session;
+user=data.user;
+try{await ensureProfile(full_name,phone,role);}
+catch(e){return alert('Conta criada, mas houve erro ao salvar o perfil: '+e.message);}
+alert('Conta criada com sucesso!');
+await loadProviders();
+await loadBookings();
+tab='profile';
+render();
+}else{
+alert('Conta criada. Verifique seu e-mail para confirmar o cadastro. Depois, entre com seu e-mail e senha. O tipo de conta escolhido será recuperado automaticamente.');
+}
+}
+
+async function logout(){
+await db.auth.signOut();
+session=null;
+user=null;
+profile=null;
+bookings=[];
+messages=[];
+selected=null;
+render();
+}
+</script>
+</body>
+</html>com seu e-mail e senha. O tipo de conta escolhido será recuperado automaticamente.'
+);
+}
+}
+
+async function logout(){
+await db.auth.signOut();
+session=null;
+user=null;
+profile=null;
+bookings=[];
+messages=[];
+selected=null;
+render();
+}
+
+function home(){
+if(!user)return authView();
+
+const q=(window.searchQuery||'').toLowerCase();
+
+const list=providers.filter(p=>
+(p.name+' '+p.category+' '+(p.area||''))
+.toLowerCase().includes(q)
+);
+
+let out=`
+<h1>Encontre profissionais</h1>
+<p class="sub">Serviços e profissionais disponíveis em Joinville e região.</p>
+
+<input placeholder="Buscar serviço, profissional ou bairro"
+value="${esc(window.searchQuery||'')}"
+oninput="window.searchQuery=this.value;render()">
+
+<div class="chips">
+${['Diarista','Manicure','Eletricista','Encanador'].map(c=>
+`<button class="chip" onclick="window.searchQuery='${c}';render()">${c}</button>`
+).join('')}
+<button class="chip" onclick="window.searchQuery='';render()">Todos</button>
+</div>
+`;
+
+if(selected){
+const p=providers.find(x=>x.id===selected);
+if(p)return out+providerDetail(p);
+}
+
+return out+(list.length
+?list.map(p=>card(`
+<div class="row">
+<div class="avatar">${esc((p.name||'?')[0])}</div>
+<div>
+<div class="name">${esc(p.name)}</div>
+<div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div>
+<div class="rating">★ ${Number(p.rating||5).toFixed(1)} · ${esc(p.about||'')}</div>
+</div>
+</div>
+
+<div class="between">
+<span class="price">A partir de ${money(Math.min(Number(p.half_day_price||0),Number(p.full_day_price||0)))}</span>
+<div>
+<button class="link" onclick="toggleFavorite('${p.id}')">
+${favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}
+</button>
+<button class="link" onclick="selectProvider('${p.id}')">Ver perfil ›</button>
+</div>
+</div>
+`)).join('')
+:card('<p class="sub">Nenhum prestador disponível encontrado.</p>')
+);
+}
+
+function providerDetail(p){
+return card(`
+<button class="link" onclick="selected=null;render()">‹ Voltar</button>
+
+<div class="row">
+<div class="avatar">${esc((p.name||'?')[0])}</div>
+<div>
+<h1>${esc(p.name)}</h1>
+<div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div>
+<div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>
+</div>
+</div>
+
+<p class="sub">${esc(p.about||'')}</p>
+
+<button class="link" onclick="toggleFavorite('${p.id}')">
+${favorites.includes(p.id)?'♥ Remover dos favoritos':'♡ Adicionar aos favoritos'}
+</button>
+
+<h2>Modalidade</h2>
+
+<button class="option ${duration==='half'?'selected':''}"
+onclick="duration='half';render()">
+Meia diária · até 4 horas
+<b class="price">${money(p.half_day_price)}</b>
+</button>
+
+<button class="option ${duration==='full'?'selected':''}"
+onclick="duration='full';render()">
+Diária completa · até 8 horas
+<b class="price">${money(p.full_day_price)}</b>
+</button>
+
+<label class="sub">Data pretendida</label>
+<input id="serviceDate" type="date"
+min="${new Date().toISOString().slice(0,10)}">
+
+<label class="sub">Observações</label>
+<textarea id="serviceNotes"
+placeholder="Descreva o serviço (opcional)"></textarea>
+
+<h2>Gorjeta opcional</h2>
+
+<div class="chips">
+${[0,5,10,15,20].map(v=>
+`<button class="chip" onclick="tip=${v};render()">${v}% ${tip===v?'✓':''}</button>`
+).join('')}
+</div>
+
+<p class="sub">
+Total estimado:
+<b>${money((duration==='half'?Number(p.half_day_price):Number(p.full_day_price))*(1+tip/100))}</b>
+</p>
+
+${btn('Solicitar serviço','createBooking()')}
+
+<p class="notice">
+A solicitação será gravada no banco.
+A contratação só estará confirmada quando o prestador aceitar.
+</p>
+`);
+}
+
+function selectProvider(id){
+selected=id;
+duration='half';
+tip=0;
+render();
+}
+
+function toggleFavorite(id){
+favorites=favorites.includes(id)
+?favorites.filter(x=>x!==id)
+:[...favorites,id];
+
+localStorage.setItem(
+'chamae_favorites',
+JSON.stringify(favorites)
+);
+
+render();
+}
+
+async function createBooking(){
+if(!user)return alert('Entre na sua conta.');
+
+const p=providers.find(x=>x.id===selected);
+if(!p)return;
+
+const base=duration==='half'
+?Number(p.half_day_price)
+:Number(p.full_day_price);
+
+const date=$('serviceDate').value;
+const notes=$('serviceNotes').value.trim();
+
+if(!date)return alert('Escolha a data pretendida.');
+
+const {data,error}=await db.from('bookings').insert({
+client_id:user.id,
+provider_id:p.id,
+provider_name:p.name,
+service_category:p.category,
+duration:duration==='half'
+?'Meia diária · até 4 horas'
+:'Diária completa · até 8 horas',
+service_date:date,
+notes,
+base_amount:base,
+tip_amount:base*tip/100,
+total_amount:base*(1+tip/100),
+status:'pending'
+}).select().single();
+
+if(error){
+return alert('Não foi possível criar a solicitação: '+error.message);
+}
+
+selected=null;
+tab='orders';
+
+await loadBookings();
+render();
+
+alert('Solicitação salva no Supabase!');
+}
+
+function orders(){
+if(!user)return authView();
+
+return `
+<h1>Meus serviços</h1>
+<p class="sub">Solicitações em que você participa.</p>
+`+(bookings.length
+?bookings.map(b=>card(`
+<div class="between">
+<b>${esc(b.service_category)} · ${esc(b.provider_name)}</b>
+<span class="tag">${esc(b.status)}</span>
+</div>
+
+<p class="sub">${esc(b.duration)} · ${esc(b.service_date||'')}</p>
+<p class="sub">${esc(b.notes||'Sem observações.')}</p>
+<b class="price">${money(b.total_amount)}</b>
+
+<div class="between">
+<button class="link" onclick="openChat('${b.id}')">Abrir chat ›</button>
+${b.status==='pending'
+?`<button class="link" onclick="cancelBooking('${b.id}')">Cancelar solicitação</button>`
+:''}
+</div>
+`)).join('')
+:card('<p class="sub">Você ainda não possui solicitações.</p>')
+);
+}
+
+async function cancelBooking(id){
+if(!confirm('Deseja cancelar esta solicitação?'))return;
+
+const {error}=await db.from('bookings')
+.update({status:'cancelled'})
+.eq('id',id);
+
+if(error){
+return alert('Não foi possível cancelar: '+error.message);
+}
+
+await loadBookings();
+render();
+}
+
+function favoritesPage(){
+if(!user)return authView();
+
+const list=providers.filter(p=>favorites.includes(p.id));
+
+return `
+<h1>Favoritos</h1>
+<p class="sub">Favoritos salvos neste aparelho.</p>
+`+(list.length
+?list.map(p=>card(`
+<b>${esc(p.name)}</b>
+<p class="sub">${esc(p.category)} · ${esc(p.area||'')}</p>
+<button class="link" onclick="toggleFavorite('${p.id}')">Remover</button>
+<button class="link" onclick="selectProvider('${p.id}');tab='home';render()">Ver perfil ›</button>
+`)).join('')
+:card('<p class="sub">Nenhum profissional favoritado.</p>')
+);
+}async function openChat(id){
+activeBooking=id;
+tab='chat';
+await loadMessages();
+render();
+subscribeChat();
+}
+
+async function loadMessages(){
+if(!activeBooking)return;
+
+const {data,error}=await db.from('messages')
+.select('*')
+.eq('booking_id',activeBooking)
+.order('created_at');
+
+if(error){
+console.error(error);
+messages=[];
+}else{
+messages=data||[];
+}
+}
+
+function chatView(){
+if(!user)return authView();
+
+const b=bookings.find(x=>x.id===activeBooking);
+
+return `
+<h1>Chat do serviço</h1>
+
+<p class="sub">
+${b?esc(b.provider_name)+' · '+esc(b.service_category):'Selecione uma contratação em Serviços.'}
+</p>
+
+${activeBooking
+?card(
+messages.map(m=>`
+<div class="chat ${m.sender_id===user.id?'mine':''}">
+${esc(m.body)}
+</div>
+`).join('')+
+`
+<input id="chatText" placeholder="Digite sua mensagem">
+<button class="action" onclick="sendMessage()">Enviar</button>
+`
+)
+:card('<p class="sub">Abra o chat a partir de uma solicitação na aba Serviços.</p>')
+}
+`;
+}
+
+async function sendMessage(){
+const el=$('chatText');
+const body=el?.value.trim();
+
+if(!body||!activeBooking)return;
+
+const {error}=await db.from('messages').insert({
+booking_id:activeBooking,
+sender_id:user.id,
+body
+});
+
+if(error){
+return alert('Falha ao enviar: '+error.message);
+}
+
+await loadMessages();
+render();
+}
+
+function subscribeChat(){
+if(realtime)db.removeChannel(realtime);
+
+if(!activeBooking)return;
+
+realtime=db.channel('chat-'+activeBooking)
+.on(
+'postgres_changes',
+{
+event:'INSERT',
+schema:'public',
+table:'messages',
+filter:'booking_id=eq.'+activeBooking
+},
+payload=>{
+if(payload.new.sender_id!==user.id){
+messages.push(payload.new);
+if(tab==='chat')render();
+}
+}
+)
+.subscribe();
+}
+
+function providerArea(){
+if(!user)return authView();
+
+if(profile?.role!=='prestador'){
+return `
+<h1>Área profissional</h1>
+${card(`
+<p class="sub">
+Seu perfil está configurado como cliente.
+Para oferecer serviços, será necessário alterar seu tipo de conta.
+</p>
+`)}
+`;
+}
+
+const mine=providers.find(p=>p.user_id===user.id);
+
+return `
+<h1>Área profissional</h1>
+<p class="sub">Cadastre ou atualize seu anúncio.</p>
+
+${card(`
+<input id="provName"
+placeholder="Nome profissional"
+value="${esc(mine?.name||profile.full_name||'')}">
+
+<input id="provCategory"
+placeholder="Categoria (ex.: Diarista)"
+value="${esc(mine?.category||'')}">
+
+<input id="provArea"
+placeholder="Bairro/região"
+value="${esc(mine?.area||'')}">
+
+<input id="provHalf" type="number" min="0" step="0.01"
+placeholder="Preço meia diária"
+value="${mine?.half_day_price??''}">
+
+<input id="provFull" type="number" min="0" step="0.01"
+placeholder="Preço diária completa"
+value="${mine?.full_day_price??''}">
+
+<textarea id="provAbout"
+placeholder="Sobre seu serviço">${esc(mine?.about||'')}</textarea>
+
+${btn(mine?'Atualizar anúncio':'Publicar anúncio','saveProvider()')}
+`)}
+`;
+}
+
+async function saveProvider(){
+const payload={
+user_id:user.id,
+name:$('provName').value.trim(),
+category:$('provCategory').value.trim(),
+area:$('provArea').value.trim(),
+half_day_price:Number($('provHalf').value),
+full_day_price:Number($('provFull').value),
+about:$('provAbout').value.trim(),
+available:true
+};
+
+if(
+!payload.name||
+!payload.category||
+!payload.area||
+!Number.isFinite(payload.half_day_price)||
+!Number.isFinite(payload.full_day_price)
+){
+return alert('Preencha nome, categoria, região e preços.');
+}
+
+const existing=providers.find(p=>p.user_id===user.id);
+
+const query=existing
+?db.from('providers').update(payload).eq('id',existing.id)
+:db.from('providers').insert(payload);
+
+const {error}=await query;
+
+if(error){
+return alert('Não foi possível salvar o anúncio: '+error.message);
+}
+
+await loadProviders();
+render();
+
+alert('Anúncio salvo no Supabase!');
+}
+
+function profileView(){
+if(!user)return authView();
+
+return `
+<h1>Perfil</h1>
+
+${card(`
+<b>${esc(profile?.full_name||user.email)}</b>
+<p class="sub">${esc(user.email)}</p>
+<p class="sub">Tipo de conta: ${esc(profile?.role||'não definido')}</p>
+${btn('Sair da conta','logout()','secondary')}
+`)}
+
+<p class="notice">
+Favoritos ficam salvos neste aparelho nesta primeira versão.
+Avaliações públicas serão ativadas após criarmos a tabela e as políticas próprias para elas.
+</p>
+`;
+}
+
+function render(){
+const views={
+home,
+orders,
+favorites:favoritesPage,
+chat:chatView,
+provider:providerArea,
+profile:profileView
+};
+
+$('app').innerHTML=(views[tab]||home)();
+
+document.querySelectorAll('nav button').forEach(b=>{
+b.classList.toggle('active',b.dataset.tab===tab);
+});
+}
+
+document.querySelectorAll('nav button').forEach(b=>{
+b.addEventListener('click',()=>{
+tab=b.dataset.tab;
+
+if(tab==='chat'&&!activeBooking){
+activeBooking=bookings[0]?.id||null;
+}
+
+if(tab==='chat'&&activeBooking){
+loadMessages().then(()=>{
+render();
+subscribeChat();
+});
+}else{
+render();
+}
+});
+});
+
+db.auth.onAuthStateChange(async(_event,newSession)=>{
+session=newSession;
+user=newSession?.user||null;
+
+if(user){
+await loadProfile();
+
+if(!profile){
+try{
+await ensureProfile();
+}catch(e){
+console.error(e);
+}
+}
+
+await loadProviders();
+await loadBookings();
+
+}else{
+profile=null;
+bookings=[];
+}
+
+render();
+});
+
+init().catch(e=>{
+$('app').innerHTML=msg(
+'Erro ao iniciar o Chamaê: '+e.message,
+'error'
+);
+});
+
+</script>
+</body>
+</html>
