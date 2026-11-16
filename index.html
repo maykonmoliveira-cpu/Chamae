@@ -162,7 +162,7 @@ async function providerDetail(p){
  return card(`<button class="link" onclick="selected=null;render()">‹ Voltar</button>
  <div class="row"><div class="avatar">${esc((p.name||'?')[0])}</div><div><h1>${esc(p.name)}</h1><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
  <p class="sub">${esc(p.about||'')}</p><h2>Serviços disponíveis</h2>
- ${list.length?list.map(s=>`<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.description||s.category||'')}</p><div class="between"><b class="price">${money(s.price||s.half_day_price||s.full_day_price)}</b><button class="action" style="width:auto;margin:0" onclick="selectService('${p.id}','${s.id}')">Contratar</button></div></div>`).join(''):'<p class="sub">Este profissional ainda não cadastrou serviços individuais. Consulte os preços no perfil.</p>'}
+ ${list.length?list.map(s=>`<div class="service-row ${selectedServiceId===s.id?'selected':''}"><b>${esc(s.title)}</b>${selectedServiceId===s.id?'<span class="verified">Selecionado</span>':''}<p class="sub">${esc(s.description||s.category||'')}</p><div class="between"><b class="price">${money(s.price||s.half_day_price||s.full_day_price)}</b><button class="action" style="width:auto;margin:0" onclick="selectService('${p.id}','${s.id}')">${selectedServiceId===s.id?'Selecionado':'Selecionar serviço'}</button></div></div>`).join(''):'<p class="sub">Este profissional ainda não cadastrou serviços individuais. Consulte os preços no perfil.</p>'}
  <h2>Solicitar contratação</h2>
  <label class="sub">Data pretendida</label><input id="serviceDate" type="date" min="${localDate()}">
  <label class="sub">Observações</label><textarea id="serviceNotes" placeholder="Descreva o que precisa"></textarea>
@@ -176,7 +176,8 @@ function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=
 async function createBooking(){
  if(!user)return alert('Entre na sua conta.');
  const p=providers.find(x=>x.id===selected);if(!p)return;
- const s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p.id);
+ const s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p.id&&x.available);
+ if(selectedServiceId&&!s)return alert('Este serviço não está mais disponível. Atualize a página e escolha outro.');
  const date=$('serviceDate')?.value,notes=$('serviceNotes')?.value.trim()||'';
  if(!date||date<localDate())return alert('Escolha uma data válida, a partir de hoje.');
  const base=Number(s?.price||p.half_day_price||p.full_day_price||0);
@@ -259,7 +260,10 @@ function providerArea(){
  let html=`<h1>Área profissional</h1><p class="sub">Cadastre vários perfis profissionais na mesma conta e adicione quantos serviços precisar.</p>`;
  html+=card(`<h2>Meus profissionais (${mine.length})</h2>${mine.length?mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId='${p.id}';render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join(''):'<p class="sub">Você ainda não cadastrou profissionais.</p>'}
  <button class="action orange" onclick="newProviderForm()">+ Adicionar profissional</button>`);
- if(!current)return html+providerForm();
+ if(!current){
+   html += `<div id="providerEditor">${providerForm()}</div><div id="serviceEditor"></div>`;
+   return html;
+ }
  const mineServices=services.filter(s=>s.provider_id===current.id);
  html+=card(`<div class="between"><div><h2 style="margin:0">${esc(current.name)}</h2><p class="sub">${esc(current.category)} · ${esc(current.area||'')}</p></div><span class="tag">${current.available?'Ativo':'Inativo'}</span></div>
  <div class="between"><button class="link" onclick="editProviderForm('${current.id}')">Editar perfil</button><button class="link" onclick="deleteProvider('${current.id}')">Excluir perfil</button></div>
@@ -271,7 +275,10 @@ function providerArea(){
  return html;
 }
 function newProviderForm(){
- const el=$('providerEditor');if(el){el.innerHTML=providerForm();el.scrollIntoView({behavior:'smooth',block:'start'})}else{render();setTimeout(()=>newProviderForm(),0)}
+ const el=$('providerEditor');
+ if(!el){alert('Não foi possível abrir o formulário. Atualize a tela e tente novamente.');return}
+ el.innerHTML=providerForm();
+ el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function providerForm(p=null){
  return card(`<h2>${p?'Editar profissional':'Novo profissional'}</h2>
@@ -290,7 +297,10 @@ function editProviderForm(id){
 }
 async function saveProvider(id=''){
  const payload={user_id:user.id,name:$('editProvName').value.trim(),category:$('editProvCategory').value.trim(),area:$('editProvArea').value.trim(),half_day_price:Number($('editProvHalf').value),full_day_price:Number($('editProvFull').value),about:$('editProvAbout').value.trim(),available:true};
- if(!payload.name||!payload.category||!payload.area||!$('editProvHalf').value.trim()||!$('editProvFull').value.trim()||payload.half_day_price<=0||payload.full_day_price<=0)return alert('Preencha nome, categoria, região e preços maiores que zero.');
+ if(!payload.name||!payload.category||!payload.area)return alert('Preencha nome, categoria e região.');
+ if(($('editProvHalf').value.trim()&&payload.half_day_price<=0)||($('editProvFull').value.trim()&&payload.full_day_price<=0))return alert('Os preços de referência devem ser maiores que zero.');
+ if(!$('editProvHalf').value.trim())payload.half_day_price=null;
+ if(!$('editProvFull').value.trim())payload.full_day_price=null;
  const query=id?db.from('providers').update(payload).eq('id',id).eq('user_id',user.id):db.from('providers').insert(payload);
  const {error}=await query;if(error)return alert('Não foi possível salvar o profissional: '+error.message);
  await loadProviders();selectedProviderId=id||null;render();alert(id?'Perfil profissional atualizado!':'Profissional cadastrado!');
@@ -338,8 +348,15 @@ async function deleteService(id){
 
 function profileView(){
  if(!user)return authView();
- return `<h1>Perfil</h1>${card(`<b>${esc(profile?.full_name||user.email)}</b><p class="sub">${esc(user.email)}</p><p class="sub">${esc(profile?.phone||'Telefone não informado')}</p><p class="sub">Tipo de conta: ${esc(profile?.role||'não definido')}</p>${btn('Sair da conta','logout()','secondary')}`)}
- <p class="notice">Favoritos ficam salvos neste aparelho. A confirmação por WhatsApp e a validação documental ainda dependem de integração e revisão administrativa.</p>`;
+ const profileCard=card(`
+  <b>${esc(profile?.full_name||user.email)}</b>
+  <p class="sub">${esc(user.email)}</p>
+  <p class="sub">${esc(profile?.phone||'Telefone não informado')}</p>
+  <p class="sub">Tipo de conta: ${esc(profile?.role||'não definido')}</p>
+  ${btn('Sair da conta','logout()','secondary')}
+ `);
+ return `<h1>Perfil</h1>${profileCard}
+  <p class="notice">Favoritos ficam salvos neste aparelho. A confirmação por WhatsApp e a validação documental ainda dependem de integração e revisão administrativa.</p>`;
 }
 
 async function render(){
