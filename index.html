@@ -50,3 +50,421 @@ nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weigh
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
+
+const SUPABASE_URL='https://rteeynlktogwjbjxezwr.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_p1JjWeb5D4l-TIGIKK5e8w_5z5j4_V6';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+let session=null,user=null,profile=null,tab='home',selected=null,duration='half',tip=0;
+let providers=[],services=[],bookings=[],activeBooking=null,messages=[],notifications=[],ratedBookingIds=[],loyaltyBonuses=[],loyaltyProgress={};
+let favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');
+let realtime=null,bookingRealtime=null,notificationRealtime=null,selectedProviderId=null,selectedServiceId=null;
+
+function card(s){return `<section class="card">${s}</section>`}
+function btn(t,fn,k=''){return `<button class="action ${k}" onclick="${fn}">${t}</button>`}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function notice(s,kind='notice'){return `<div class="${kind}">${esc(s)}</div>`}
+function localDate(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+
+async function init(){
+  if(!window.supabase){$('app').innerHTML=notice('Falha ao carregar Supabase. Verifique a conexão.','error');return}
+  const {data,error}=await db.auth.getSession();
+  if(error)console.error(error);
+  session=data.session;user=session?.user||null;
+  if(user)await loadProfile();
+  await loadProviders();
+  await loadServices();
+  if(user){await loadBookings();await loadNotifications();await loadRatedBookings();await loadLoyaltyBonuses();subscribeBookings();subscribeNotifications()}
+  render();
+}
+
+async function loadProfile(){
+  const {data,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();
+  if(error){console.error(error);return}profile=data;
+}
+async function ensureProfile(fullName='',phone='',role=null){
+  if(!user)return;
+  const m=user.user_metadata||{},r=role||profile?.role||m.role||'cliente';
+  const safe=['cliente','prestador'].includes(r)?r:'cliente';
+  const payload={id:user.id,full_name:fullName||profile?.full_name||m.full_name||user.email?.split('@')[0]||'Usuário',phone:phone||profile?.phone||m.phone||null,role:safe};
+  const {data,error}=await db.from('profiles').upsert(payload,{onConflict:'id'}).select().single();
+  if(error)throw error;profile=data;
+}
+async function loadProviders(){
+  const {data,error}=await db.from('providers').select('id,user_id,name,category,area,rating,half_day_price,full_day_price,about,available').order('created_at',{ascending:false});
+  if(error){console.error(error);providers=[]}else providers=data||[];
+}
+async function loadServices(){
+  const {data,error}=await db.from('services').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);services=[]}else services=data||[];
+}
+async function loadBookings(){
+  const {data,error}=await db.from('bookings').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);bookings=[]}else bookings=data||[];
+}
+async function loadNotifications(){
+ if(!user)return;const {data,error}=await db.from('notifications').select('*').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(30);
+ if(error){console.warn('Notificações indisponíveis. Execute a migração SQL da opção 3.',error.message);notifications=[];return}notifications=data||[];
+}
+async function loadRatedBookings(){
+ if(!user)return;ratedBookingIds=[];const ids=bookings.filter(b=>b.client_id===user.id&&b.status==='completed').map(b=>b.id);if(!ids.length)return;
+ const {data,error}=await db.from('ratings').select('booking_id').in('booking_id',ids);if(error){console.warn('Não foi possível consultar avaliações:',error.message);return}ratedBookingIds=(data||[]).map(x=>x.booking_id);
+}
+async function loadLoyaltyBonuses(){
+  loyaltyBonuses=[];
+  loyaltyProgress={};
+  if(!user || profile?.role!=='prestador') return;
+  const mine=providers.filter(p=>p.user_id===user.id).map(p=>p.id);
+  if(!mine.length) return;
+
+  const {data:bonuses,error:bonusError}=await db.from('provider_loyalty_bonuses')
+    .select('id,provider_id,milestone_number,qualifying_services,source_booking_id,base_amount,bonus_amount,status,created_at,paid_at')
+    .in('provider_id',mine).order('created_at',{ascending:false});
+  if(bonusError){console.warn('Bônus indisponíveis:',bonusError.message);return;}
+  loyaltyBonuses=bonuses||[];
+
+  const {data:ratings,error:ratingError}=await db.from('ratings')
+    .select('booking_id,provider_id').in('provider_id',mine).eq('score',5);
+  if(ratingError){console.warn('Progresso de fidelidade indisponível:',ratingError.message);return;}
+  const ratingRows=ratings||[];
+  const ids=[...new Set(ratingRows.map(r=>r.booking_id).filter(Boolean))];
+  let completed=[];
+  if(ids.length){
+    const {data,error}=await db.from('bookings').select('id,provider_id,base_amount')
+      .in('id',ids).eq('status','completed');
+    if(error){console.warn('Não foi possível confirmar serviços concluídos:',error.message);return;}
+    completed=data||[];
+  }
+  for(const providerId of mine){
+    const count=completed.filter(b=>b.provider_id===providerId).length;
+    loyaltyProgress[providerId]={total:count,completed:count%10,remaining:10-(count%10),cycles:Math.floor(count/10)};
+  }
+}
+function loyaltyView(providerIds){
+  const rows=loyaltyBonuses.filter(x=>providerIds.includes(x.provider_id));
+  const total=rows.reduce((sum,x)=>sum+Number(x.bonus_amount||0),0);
+  const pending=rows.filter(x=>x.status==='pending').reduce((sum,x)=>sum+Number(x.bonus_amount||0),0);
+  const progressHtml=providerIds.map(id=>{
+    const provider=providers.find(p=>p.id===id);
+    const data=loyaltyProgress[id]||{total:0,completed:0,remaining:10,cycles:0};
+    const percent=data.completed*10;
+    return `<div class="service-row"><b>${esc(provider?.name||'Profissional')}</b><p class="sub">${data.completed} de 10 avaliações com 5 estrelas neste ciclo</p><div style="height:10px;background:#E3EAF2;border-radius:20px;overflow:hidden"><div style="height:100%;width:${percent}%;background:#168653;border-radius:20px"></div></div><p class="sub">${data.remaining===10?'Comece um novo ciclo.':`Faltam ${data.remaining} serviço(s) para o próximo bônus.`} · ${data.total} no total</p></div>`;
+  }).join('');
+  return card(`<h2 style="margin-top:0">Programa de fidelidade</h2><p class="sub">A cada 10 serviços concluídos com nota 5 estrelas, você recebe um bônus de 10% sobre o valor-base do décimo serviço do ciclo.</p>${progressHtml}<div class="between"><span class="sub">Bônus acumulado</span><b class="price">${money(total)}</b></div><div class="between"><span class="sub">Pendente de repasse</span><b>${money(pending)}</b></div>${rows.length?rows.map(x=>`<div class="service-row"><b>Ciclo ${x.milestone_number}</b><p class="sub">${x.qualifying_services} serviços 5 estrelas · Base ${money(x.base_amount)}</p><div class="between"><b class="price">${money(x.bonus_amount)}</b><span class="tag">${x.status==='paid'?'Pago':'Pendente'}</span></div></div>`).join(''):'<p class="sub">Nenhum bônus registrado ainda.</p>'}<p class="sub">O registro do bônus é automático; o repasse financeiro é feito separadamente.</p>`);
+}
+async function markNotificationRead(id){const {error}=await db.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id).eq('recipient_id',user.id);if(error)return alert('Não foi possível marcar como lida: '+error.message);await loadNotifications();render()}
+function notificationsView(){
+ const unread=notifications.filter(n=>!n.read_at).length;
+ return card(`<div class="between"><h2 style="margin:0">Notificações</h2><span class="tag">${unread} não lida(s)</span></div>${notifications.length?notifications.map(n=>`<div class="service-row"><b>${esc(n.title)}</b><p class="sub">${esc(n.body)}</p><div class="between"><small class="sub">${new Date(n.created_at).toLocaleString('pt-BR')}</small>${n.read_at?'':'<button class="link" onclick="markNotificationRead(\''+n.id+'\')">Marcar como lida</button>'}</div></div>`).join(''):'<p class="sub">Nenhuma notificação por enquanto.</p>'}`);
+}
+async function isVerified(providerId){
+  const {data,error}=await db.from('provider_verifications').select('status').eq('provider_id',providerId).eq('status','verified').maybeSingle();
+  return !error&&data?.status==='verified';
+}
+
+function authView(){
+return `<h1>Bem-vindo ao Chamaê</h1><p class="sub">Entre ou crie sua conta para contratar serviços ou oferecer seu trabalho.</p>
+${card(`<h2>Entrar</h2><input id="loginEmail" type="email" autocomplete="email" placeholder="Seu e-mail"><input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha">${btn('Entrar','login()')}<hr><h2>Criar conta</h2><input id="newName" placeholder="Nome completo"><input id="newPhone" placeholder="Telefone / WhatsApp"><input id="newEmail" type="email" placeholder="E-mail"><input id="newPass" type="password" minlength="6" placeholder="Senha (mínimo 6 caracteres)"><select id="newRole"><option value="cliente">Quero contratar serviços</option><option value="prestador">Quero oferecer serviços</option></select>${btn('Criar minha conta','signup()','orange')}<p class="sub">A confirmação de cadastro continua seguindo a configuração atual do Supabase Auth. A confirmação por código no WhatsApp ainda precisa de integração própria.</p>`)}`;
+}
+async function login(){
+ const email=$('loginEmail').value.trim(),password=$('loginPass').value;
+ if(!email||!password)return alert('Informe e-mail e senha.');
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error)return alert(error.message);
+ session=data.session;user=data.user;await loadProfile();
+ if(!profile){try{await ensureProfile()}catch(e){return alert('Login realizado, mas não foi possível criar seu perfil: '+e.message)}}
+ await loadProviders();await loadServices();await loadBookings();await loadNotifications();await loadRatedBookings();await loadLoyaltyBonuses();subscribeBookings();subscribeNotifications();tab='home';render();
+}
+async function signup(){
+ const full_name=$('newName').value.trim(),phone=$('newPhone').value.trim(),email=$('newEmail').value.trim(),password=$('newPass').value,role=$('newRole').value;
+ if(!full_name||!email||password.length<6)return alert('Preencha nome, e-mail e senha com pelo menos 6 caracteres.');
+ if(!['cliente','prestador'].includes(role))return alert('Selecione um tipo de conta válido.');
+ const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name,phone,role}}});
+ if(error)return alert(error.message);
+ if(data.session){
+  session=data.session;user=data.user;
+  try{await ensureProfile(full_name,phone,role)}catch(e){return alert('Conta criada, mas houve erro ao salvar o perfil: '+e.message)}
+  alert('Conta criada com sucesso!');await loadProviders();await loadServices();await loadBookings();await loadNotifications();await loadRatedBookings();await loadLoyaltyBonuses();subscribeBookings();subscribeNotifications();tab='profile';render();
+ }else alert('Conta criada. Verifique seu e-mail para confirmar o cadastro. Depois, entre com seu e-mail e senha.');
+}
+async function logout(){
+ if(realtime){await db.removeChannel(realtime);realtime=null}
+ if(bookingRealtime){await db.removeChannel(bookingRealtime);bookingRealtime=null}
+ if(notificationRealtime){await db.removeChannel(notificationRealtime);notificationRealtime=null}
+ await db.auth.signOut();session=null;user=null;profile=null;bookings=[];messages=[];selected=null;selectedProviderId=null;render();
+}
+
+function providerCard(p){
+ const verified=!!p._verified;
+ const serviceCount=services.filter(s=>s.provider_id===p.id).length;
+ return card(`<div class="row"><div class="avatar">${esc((p.name||'?')[0])}</div><div style="flex:1"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
+ <div class="between"><span class="price">${serviceCount} serviço(s) cadastrado(s)</span><button class="link" onclick="toggleFavorite('${p.id}')">${favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}</button><button class="link" onclick="selectProvider('${p.id}')">Ver serviços ›</button></div>`);
+}
+async function home(){
+ if(!user)return authView();
+ const q=(window.searchQuery||'').toLowerCase();
+ const list=providers.filter(p=>p.available&&(p.name+' '+p.category+' '+(p.area||'')).toLowerCase().includes(q));
+ let out=`<h1>Encontre profissionais</h1><p class="sub">Serviços e profissionais disponíveis em Joinville e região.</p>
+ <input placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="window.searchQuery=this.value;render()">
+ <div class="chips">${['Diarista','Manicure','Eletricista','Encanador'].map(c=>`<button class="chip" onclick="window.searchQuery='${c}';render()">${c}</button>`).join('')}<button class="chip" onclick="window.searchQuery='';render()">Todos</button></div>`;
+ if(selected){const p=providers.find(x=>x.id===selected);if(p)return out+await providerDetail(p)}
+ return out+(list.length? (await Promise.all(list.map(async p=>{p._verified=await isVerified(p.id);return providerCard(p)}))).join(''):card('<p class="sub">Nenhum prestador disponível encontrado.</p>'));
+}
+async function providerDetail(p){
+ const list=services.filter(s=>s.provider_id===p.id&&s.available);
+ const verified=await isVerified(p.id);
+ return card(`<button class="link" onclick="selected=null;render()">‹ Voltar</button>
+ <div class="row"><div class="avatar">${esc((p.name||'?')[0])}</div><div><h1>${esc(p.name)}</h1><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
+ <p class="sub">${esc(p.about||'')}</p><h2>Serviços disponíveis</h2>
+ ${list.length?list.map(s=>`<div class="service-row ${selectedServiceId===s.id?'selected':''}"><b>${esc(s.title)}</b>${selectedServiceId===s.id?'<span class="verified">Selecionado</span>':''}<p class="sub">${esc(s.description||s.category||'')}</p><div class="between"><b class="price">${Number(s.price)>0?money(s.price):'Preço avulso não definido'}</b><button class="action" style="width:auto;margin:0" ${Number(s.price)>0?'':'disabled'} onclick="selectService('${p.id}','${s.id}')">${Number(s.price)>0?(selectedServiceId===s.id?'Selecionado':'Selecionar serviço'):'Indisponível'}</button></div>${Number(s.price)>0?'':'<p class="sub">Para contratar pelo fluxo atual, o profissional precisa cadastrar um preço no campo “Preço do serviço”.</p>'}</div>`).join(''):'<p class="sub">Este profissional ainda não cadastrou serviços individuais disponíveis para contratação.</p>'}
+ <h2>Solicitar contratação</h2>
+ <label class="sub">Data pretendida</label><input id="serviceDate" type="date" min="${localDate()}">
+ <label class="sub">Horário pretendido</label><input id="serviceTime" type="time" required>
+ <label class="sub">Observações</label><textarea id="serviceNotes" placeholder="Descreva o que precisa"></textarea>
+ <p class="notice">A solicitação será registrada. A contratação só estará confirmada quando o profissional aceitar.</p>
+ ${btn('Solicitar serviço','createBooking()')}`);
+}
+function selectProvider(id){selected=id;selectedServiceId=null;render()}
+function selectService(providerId,serviceId){selected=providerId;selectedServiceId=serviceId;render()}
+function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];localStorage.setItem('chamae_favorites',JSON.stringify(favorites));render()}
+
+async function createBooking(){
+ if(!user)return alert('Entre na sua conta.');
+ const p=providers.find(x=>x.id===selected);
+ if(!p)return alert('Selecione um profissional.');
+ const s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p.id&&x.available===true);
+ if(!s)return alert('Selecione um serviço individual disponível antes de solicitar.');
+ if(!Number.isFinite(Number(s.price))||Number(s.price)<=0)return alert('Este serviço não possui preço avulso válido. Peça ao profissional para preencher o campo “Preço do serviço”.');
+ if(p.user_id===user.id)return alert('Você não pode contratar seu próprio serviço.');
+ const verified=await isVerified(p.id);
+ if(!verified)return alert('Este profissional ainda não possui verificação aprovada pelo Chamaê.');
+ const date=$('serviceDate')?.value,time=$('serviceTime')?.value,notes=$('serviceNotes')?.value.trim()||'';
+ if(!date||date<localDate())return alert('Escolha uma data válida, a partir de hoje.');
+ if(!time)return alert('Escolha o horário pretendido para o serviço.');
+ const payload={
+  client_id:user.id,
+  provider_id:p.id,
+  service_id:s.id,
+  duration:'Serviço avulso',
+  service_date:date,
+  service_time:time,
+  notes,
+  tip_amount:0
+ };
+ const {error}=await db.from('bookings').insert(payload);
+ if(error){
+  console.error('Erro ao criar reserva:',error);
+  return alert('Não foi possível criar a solicitação: '+error.message);
+ }
+ selected=null;selectedServiceId=null;tab='orders';await loadBookings();await loadNotifications();render();alert('Solicitação enviada! O profissional receberá uma notificação no Chamaê e poderá aceitar ou rejeitar.');
+}
+
+function statusLabel(s){return ({pending:'Aguardando prestador',accepted:'Serviço aceito',rejected:'Solicitação recusada',in_progress:'Atendimento em andamento',completed:'Serviço concluído',cancelled:'Cancelado'})[s]||s}
+function bookingTimeline(b){
+ const steps=[['Solicitado',b.created_at],['Aceito',b.accepted_at],['Iniciado',b.started_at],['Concluído',b.completed_at],['Cancelado',b.cancelled_at],['Recusado',b.rejected_at]].filter(x=>x[1]);
+ return steps.length?`<div class="sub">${steps.map(x=>`<div>• ${x[0]}: ${new Date(x[1]).toLocaleString('pt-BR')}</div>`).join('')}</div>`:'';
+}
+function bookingActions(b){
+ const isProvider=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id),isClient=b.client_id===user.id;let html='';
+ if(isProvider&&b.status==='pending')html+=`<button class="action" onclick="changeBookingStatus('${b.id}','accepted')">Aceitar serviço</button><button class="action secondary" onclick="changeBookingStatus('${b.id}','rejected')">Rejeitar serviço</button>`;
+ if(isProvider&&b.status==='accepted')html+=`<button class="action orange" onclick="changeBookingStatus('${b.id}','in_progress')">Iniciar atendimento</button>`;
+ if(isProvider&&b.status==='in_progress')html+=`<button class="action" onclick="changeBookingStatus('${b.id}','completed')">Concluir atendimento</button>`;
+ if(isClient&&['pending','accepted'].includes(b.status))html+=`<button class="action secondary" onclick="changeBookingStatus('${b.id}','cancelled')">Cancelar solicitação</button>`;
+ return html;
+}
+async function changeBookingStatus(id,newStatus){
+ const labels={accepted:'aceitar este serviço',rejected:'rejeitar esta solicitação',in_progress:'iniciar este atendimento',completed:'concluir este atendimento',cancelled:'cancelar esta solicitação'};
+ if(!labels[newStatus])return;if(!confirm('Deseja '+labels[newStatus]+'?'))return;
+ const {data,error}=await db.from('bookings').update({status:newStatus}).eq('id',id).select('id,status').maybeSingle();
+ if(error)return alert('Não foi possível atualizar: '+error.message);
+ if(!data)return alert('Nenhuma alteração foi confirmada. Verifique sua permissão e atualize a tela.');
+ await loadBookings();await loadNotifications();await loadRatedBookings();render();alert('Status atualizado: '+statusLabel(data.status)+'.');
+}
+function orders(){
+ if(!user)return authView();
+ return `<h1>Meus serviços</h1><p class="sub">Acompanhe solicitações, horários, cancelamentos e avaliações.</p>`+notificationsView()+
+ (bookings.length?bookings.map(b=>card(`<div class="between"><b>${esc(b.service_category)} · ${esc(b.provider_name)}</b><span class="tag">${esc(statusLabel(b.status))}</span></div><p class="sub">${esc(b.duration)} · ${esc(b.service_date||'')}${b.service_time?' às '+esc(String(b.service_time).slice(0,5)):''}</p><p class="sub">${esc(b.notes||'Sem observações.')}</p>${bookingTimeline(b)}<b class="price">${money(b.total_amount)}</b><div class="between"><button class="link" onclick="openChat('${b.id}')">Abrir chat ›</button></div>${bookingActions(b)}${b.client_id===user.id&&b.status==='completed'&&!ratedBookingIds.includes(b.id)?`<label class="sub">Avalie este serviço</label><select id="rating-${b.id}"><option value="5">5 estrelas</option><option value="4">4 estrelas</option><option value="3">3 estrelas</option><option value="2">2 estrelas</option><option value="1">1 estrela</option></select><input id="comment-${b.id}" placeholder="Comentário (opcional)"><button class="action secondary" onclick="submitRating('${b.id}','${b.provider_id}')">Enviar avaliação</button>`:''}`)).join(''):card('<p class="sub">Você ainda não possui solicitações.</p>'));
+}
+async function submitRating(bookingId,providerId){
+ if(ratedBookingIds.includes(bookingId))return alert('Este serviço já recebeu uma avaliação.');
+ const score=Number($('rating-'+bookingId)?.value),comment=$('comment-'+bookingId)?.value.trim()||null;
+ if(!Number.isInteger(score)||score<1||score>5)return alert('Selecione uma nota válida.');
+ const {error}=await db.from('ratings').insert({booking_id:bookingId,client_id:user.id,provider_id:providerId,score,comment});
+ if(error)return alert('Não foi possível enviar a avaliação: '+error.message);
+ alert('Avaliação enviada. Obrigado!');await loadBookings();await loadRatedBookings();await loadLoyaltyBonuses();render();
+}
+function favoritesPage(){
+ if(!user)return authView();const list=providers.filter(p=>favorites.includes(p.id));
+ return `<h1>Favoritos</h1><p class="sub">Favoritos salvos neste aparelho.</p>`+(list.length?list.map(p=>card(`<b>${esc(p.name)}</b><p class="sub">${esc(p.category)} · ${esc(p.area||'')}</p><button class="link" onclick="toggleFavorite('${p.id}')">Remover</button><button class="link" onclick="selectProvider('${p.id}');tab='home';render()">Ver perfil ›</button>`)).join(''):card('<p class="sub">Nenhum profissional favoritado.</p>'));
+}
+async function openChat(id){activeBooking=id;tab='chat';await loadMessages();render();subscribeChat()}
+async function loadMessages(){
+ if(!activeBooking)return;
+ const {data,error}=await db.from('messages').select('*').eq('booking_id',activeBooking).order('created_at');
+ if(error){console.error(error);messages=[]}else messages=data||[];
+}
+function chatView(){
+ if(!user)return authView();const b=bookings.find(x=>x.id===activeBooking);
+ return `<h1>Chat do serviço</h1><p class="sub">${b?esc(b.provider_name)+' · '+esc(b.service_category):'Selecione uma contratação em Serviços.'}</p>`+
+ (activeBooking?card(messages.map(m=>`<div class="chat ${m.sender_id===user.id?'mine':''}">${esc(m.body)}</div>`).join('')+`<input id="chatText" placeholder="Digite sua mensagem"><button class="action" onclick="sendMessage()">Enviar</button>`):card('<p class="sub">Abra o chat a partir de uma solicitação na aba Serviços.</p>'));
+}
+async function sendMessage(){
+ const el=$('chatText'),body=el?.value.trim();if(!body||!activeBooking)return;
+ const {error}=await db.from('messages').insert({booking_id:activeBooking,sender_id:user.id,body});
+ if(error)return alert('Falha ao enviar: '+error.message);
+ await loadMessages();render();
+}
+function subscribeChat(){
+ if(realtime)db.removeChannel(realtime);if(!activeBooking)return;
+ realtime=db.channel('chat-'+activeBooking).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'booking_id=eq.'+activeBooking},payload=>{
+  if(payload.new.sender_id!==user.id){messages.push(payload.new);if(tab==='chat')render()}
+ }).subscribe();
+}
+function subscribeBookings(){
+ if(bookingRealtime)db.removeChannel(bookingRealtime);if(!user)return;
+ bookingRealtime=db.channel('bookings-'+user.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings'},async()=>{await loadBookings();await loadRatedBookings();if(tab==='orders'||tab==='provider')render()}).subscribe();
+}
+function subscribeNotifications(){
+ if(notificationRealtime)db.removeChannel(notificationRealtime);if(!user)return;
+ notificationRealtime=db.channel('notifications-'+user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'recipient_id=eq.'+user.id},async payload=>{await loadNotifications();if(tab==='orders')render();if(payload.new?.title)alert(payload.new.title+'\n'+(payload.new.body||''));}).subscribe();
+}
+
+/* ÁREA PROFISSIONAL: vários perfis por conta e serviços ilimitados */
+function providerArea(){
+ if(!user)return authView();
+ if(profile?.role!=='prestador')return `<h1>Área profissional</h1>${card('<p class="sub">Sua conta está configurada como cliente. Entre com uma conta de prestador para publicar serviços.</p>')}`;
+ const mine=providers.filter(p=>p.user_id===user.id);
+ const current=mine.find(p=>p.id===selectedProviderId)||mine[0]||null;
+ if(current)selectedProviderId=current.id;
+ let html=`<h1>Área profissional</h1><p class="sub">Cadastre vários perfis profissionais na mesma conta e adicione quantos serviços precisar.</p>`;
+ html+=loyaltyView(mine.map(p=>p.id));
+ html+=card(`<h2>Meus profissionais (${mine.length})</h2>${mine.length?mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId='${p.id}';render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join(''):'<p class="sub">Você ainda não cadastrou profissionais.</p>'}
+ <button class="action orange" onclick="newProviderForm()">+ Adicionar profissional</button>`);
+ if(!current){
+   html += `<div id="providerEditor">${providerForm()}</div><div id="serviceEditor"></div>`;
+   return html;
+ }
+ const mineServices=services.filter(s=>s.provider_id===current.id);
+ html+=card(`<div class="between"><div><h2 style="margin:0">${esc(current.name)}</h2><p class="sub">${esc(current.category)} · ${esc(current.area||'')}</p></div><span class="tag">${current.available?'Ativo':'Inativo'}</span></div>
+ <div class="between"><button class="link" onclick="editProviderForm('${current.id}')">Editar perfil</button><button class="link" onclick="deleteProvider('${current.id}')">Excluir perfil</button></div>
+ <h2>Serviços cadastrados (${mineServices.length})</h2>
+ ${mineServices.length?mineServices.map(s=>`<div class="service-row"><div class="between"><b>${esc(s.title)}</b><span class="tag">${s.available?'Ativo':'Inativo'}</span></div><p class="sub">${esc(s.category)} · ${money(s.price||s.half_day_price||s.full_day_price)}</p><p class="sub">${esc(s.description||'')}</p><button class="link" onclick="editServiceForm('${s.id}')">Editar</button><button class="link" onclick="deleteService('${s.id}')">Excluir</button></div>`).join(''):'<p class="sub">Nenhum serviço cadastrado para este profissional.</p>'}
+ <button class="action" onclick="newServiceForm('${current.id}')">+ Adicionar serviço</button>
+ <p class="notice">O selo Chamaê Verificado só aparece depois que a equipe administrativa aprovar a verificação. O cadastro do selo no banco não substitui a conferência de identidade.</p>`);
+ html+=`<div id="providerEditor"></div><div id="serviceEditor"></div>`;
+ return html;
+}
+function newProviderForm(){
+ const el=$('providerEditor');
+ if(!el){alert('Não foi possível abrir o formulário. Atualize a tela e tente novamente.');return}
+ el.innerHTML=providerForm();
+ el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function providerForm(p=null){
+ return card(`<h2>${p?'Editar profissional':'Novo profissional'}</h2>
+ <input id="editProvName" placeholder="Nome profissional" value="${esc(p?.name||profile?.full_name||'')}">
+ <input id="editProvCategory" placeholder="Categoria principal (ex.: Diarista)" value="${esc(p?.category||'')}">
+ <input id="editProvArea" placeholder="Bairro/região de atendimento" value="${esc(p?.area||'')}">
+ <input id="editProvHalf" type="number" min="0" step="0.01" placeholder="Preço de referência — meia diária" value="${p?.half_day_price??''}">
+ <input id="editProvFull" type="number" min="0" step="0.01" placeholder="Preço de referência — diária completa" value="${p?.full_day_price??''}">
+ <textarea id="editProvAbout" placeholder="Sobre o profissional e sua experiência">${esc(p?.about||'')}</textarea>
+ <button class="action" onclick="saveProvider('${p?.id||''}')">${p?'Salvar alterações':'Cadastrar profissional'}</button>
+ <button class="action secondary" onclick="render()">Cancelar</button>`);
+}
+function editProviderForm(id){
+ const p=providers.find(x=>x.id===id);if(!p)return;
+ const el=$('providerEditor');if(el)el.innerHTML=providerForm(p);else{render();setTimeout(()=>editProviderForm(id),0)}
+}
+async function saveProvider(id=''){
+ const payload={user_id:user.id,name:$('editProvName').value.trim(),category:$('editProvCategory').value.trim(),area:$('editProvArea').value.trim(),half_day_price:Number($('editProvHalf').value),full_day_price:Number($('editProvFull').value),about:$('editProvAbout').value.trim(),available:true};
+ if(!payload.name||!payload.category||!payload.area)return alert('Preencha nome, categoria e região.');
+ if(($('editProvHalf').value.trim()&&payload.half_day_price<=0)||($('editProvFull').value.trim()&&payload.full_day_price<=0))return alert('Os preços de referência devem ser maiores que zero.');
+ if(!$('editProvHalf').value.trim())payload.half_day_price=null;
+ if(!$('editProvFull').value.trim())payload.full_day_price=null;
+ const query=id?db.from('providers').update(payload).eq('id',id).eq('user_id',user.id):db.from('providers').insert(payload);
+ const {error}=await query;if(error)return alert('Não foi possível salvar o profissional: '+error.message);
+ await loadProviders();selectedProviderId=id||null;render();alert(id?'Perfil profissional atualizado!':'Profissional cadastrado!');
+}
+async function deleteProvider(id){
+ if(!confirm('Excluir este perfil profissional? Os serviços vinculados também serão excluídos.'))return;
+ const {error}=await db.from('providers').delete().eq('id',id).eq('user_id',user.id);
+ if(error)return alert('Não foi possível excluir: '+error.message);
+ if(selectedProviderId===id)selectedProviderId=null;
+ await loadProviders();await loadServices();render();alert('Perfil excluído.');
+}
+function newServiceForm(providerId){
+ const el=$('serviceEditor');if(el){el.innerHTML=serviceForm(providerId);el.scrollIntoView({behavior:'smooth',block:'start'})}else{render();setTimeout(()=>newServiceForm(providerId),0)}
+}
+function serviceForm(providerId,s=null){
+ return card(`<h2>${s?'Editar serviço':'Novo serviço'}</h2>
+ <input id="editServiceTitle" placeholder="Nome do serviço" value="${esc(s?.title||'')}">
+ <input id="editServiceCategory" placeholder="Categoria / especialidade" value="${esc(s?.category||'')}">
+ <textarea id="editServiceDescription" placeholder="Descrição do serviço">${esc(s?.description||'')}</textarea>
+ <input id="editServicePrice" type="number" min="0" step="0.01" placeholder="Preço do serviço (R$)" value="${s?.price??''}">
+ <input id="editServiceHalf" type="number" min="0" step="0.01" placeholder="Preço meia diária — opcional" value="${s?.half_day_price??''}">
+ <input id="editServiceFull" type="number" min="0" step="0.01" placeholder="Preço diária completa — opcional" value="${s?.full_day_price??''}">
+ <button class="action" onclick="saveService('${providerId}','${s?.id||''}')">${s?'Salvar serviço':'Cadastrar serviço'}</button>
+ <button class="action secondary" onclick="render()">Cancelar</button>`);
+}
+function editServiceForm(id){
+ const s=services.find(x=>x.id===id);if(!s)return;
+ const el=$('serviceEditor');if(el)el.innerHTML=serviceForm(s.provider_id,s);else{render();setTimeout(()=>editServiceForm(id),0)}
+}
+async function saveService(providerId,id=''){
+ const payload={provider_id:providerId,title:$('editServiceTitle').value.trim(),category:$('editServiceCategory').value.trim(),description:$('editServiceDescription').value.trim(),price:$('editServicePrice').value?Number($('editServicePrice').value):null,half_day_price:$('editServiceHalf').value?Number($('editServiceHalf').value):null,full_day_price:$('editServiceFull').value?Number($('editServiceFull').value):null,available:true};
+ if(!payload.title||!payload.category)return alert('Informe o nome e a categoria do serviço.');
+ if([payload.price,payload.half_day_price,payload.full_day_price].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))return alert('Informe preços válidos.');
+ if(!payload.price&&!payload.half_day_price&&!payload.full_day_price)return alert('Informe pelo menos um preço.');
+ const query=id?db.from('services').update(payload).eq('id',id):db.from('services').insert(payload);
+ const {error}=await query;if(error)return alert('Não foi possível salvar o serviço: '+error.message);
+ await loadServices();render();alert(id?'Serviço atualizado!':'Serviço cadastrado!');
+}
+async function deleteService(id){
+ if(!confirm('Excluir este serviço?'))return;
+ const {error}=await db.from('services').delete().eq('id',id);
+ if(error)return alert('Não foi possível excluir: '+error.message);
+ await loadServices();render();alert('Serviço excluído.');
+}
+
+function profileView(){
+ if(!user)return authView();
+ return `<h1>Perfil</h1>${card(`<b>${esc(profile?.full_name||user.email)}</b><p class="sub">${esc(user.email)}</p><p class="sub">${esc(profile?.phone||'Telefone não informado')}</p><p class="sub">Tipo de conta: ${esc(profile?.role||'não definido')}</p>${btn('Sair da conta','logout()','secondary')}`)}
+ <p class="notice">Favoritos ficam salvos neste aparelho. A confirmação por WhatsApp e a validação documental ainda dependem de integração e revisão administrativa.</p>`;
+}
+
+async function render(){
+ const views={home,orders,favorites:favoritesPage,chat:chatView,provider:providerArea,profile:profileView};
+ const view=views[tab]||home;
+ const result=view();
+ $('app').innerHTML=(result instanceof Promise)?await result:result;
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+ if(tab==='provider'&&selectedProviderId){
+  const target=$('providerEditor');
+  if(target&&window.pendingProviderEditor){target.innerHTML=window.pendingProviderEditor;window.pendingProviderEditor=null}
+ }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{
+ tab=b.dataset.tab;
+ if(tab==='chat'&&!activeBooking)activeBooking=bookings[0]?.id||null;
+ if(tab==='chat'&&activeBooking){loadMessages().then(()=>{render();subscribeChat()})}
+ else render();
+}));
+db.auth.onAuthStateChange((_event,newSession)=>{
+ setTimeout(async()=>{
+  session=newSession;user=newSession?.user||null;
+  if(user){await loadProfile();if(!profile){try{await ensureProfile()}catch(e){console.error(e)}}
+   await loadProviders();await loadServices();await loadBookings();await loadNotifications();await loadRatedBookings();await loadLoyaltyBonuses();subscribeBookings();subscribeNotifications();
+  }else{
+   if(bookingRealtime){await db.removeChannel(bookingRealtime);bookingRealtime=null}
+   if(notificationRealtime){await db.removeChannel(notificationRealtime);notificationRealtime=null}
+   profile=null;bookings=[];providers=[];services=[];
+  }
+  render();
+ },0);
+});
+init().catch(e=>{$('app').innerHTML=notice('Erro ao iniciar o Chamaê: '+e.message,'error')});
+</script>
+</body>
+</html>
