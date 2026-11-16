@@ -65,6 +65,25 @@ let realtime=null,bookingRealtime=null,notificationRealtime=null,selectedProvide
 function card(s){return `<section class="card">${s}</section>`}
 function btn(t,fn,k=''){return `<button class="action ${k}" onclick="${fn}">${t}</button>`}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function categoryIcon(category=''){
+ const c=String(category).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ if(/diarist|limpeza|faxin/.test(c))return '🧹';
+ if(/manicur|unha|nail|pedicur/.test(c))return '💅';
+ if(/eletric/.test(c))return '⚡';
+ if(/encan|hidraul|bombeir/.test(c))return '🔧';
+ if(/bab[aá]|cuidador|cuidadora/.test(c))return '🧸';
+ if(/jardina|paisag/.test(c))return '🌿';
+ if(/pintor|pintura/.test(c))return '🖌️';
+ if(/pedreir|construc|reforma/.test(c))return '🧱';
+ if(/cabel|barbe|salao|beleza/.test(c))return '✂️';
+ if(/cozin|chef|buffet/.test(c))return '👨‍🍳';
+ if(/montador|montagem|moveis/.test(c))return '🪛';
+ if(/tecnolog|informat|computador|suporte/.test(c))return '💻';
+ if(/costur|alfaiat/.test(c))return '🧵';
+ if(/pet|animal|veterin/.test(c))return '🐾';
+ if(/motor|mecan|autom/.test(c))return '🚗';
+ return '🧰';
+}
 function notice(s,kind='notice'){return `<div class="${kind}">${esc(s)}</div>`}
 function localDate(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 
@@ -199,7 +218,7 @@ async function logout(){
 function providerCard(p){
  const verified=!!p._verified;
  const serviceCount=services.filter(s=>s.provider_id===p.id).length;
- return card(`<div class="row"><div class="avatar">${esc((p.name||'?')[0])}</div><div style="flex:1"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
+ return card(`<div class="row"><div class="avatar" title="${esc(p.category||'Profissional')}">${categoryIcon(p.category)}</div><div style="flex:1"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
  <div class="between"><span class="price">${serviceCount} serviço(s) cadastrado(s)</span><button class="link" onclick="toggleFavorite('${p.id}')">${favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}</button><button class="link" onclick="selectProvider('${p.id}')">Ver serviços ›</button></div>`);
 }
 async function home(){
@@ -216,7 +235,7 @@ async function providerDetail(p){
  const list=services.filter(s=>s.provider_id===p.id&&s.available);
  const verified=await isVerified(p.id);
  return card(`<button class="link" onclick="selected=null;render()">‹ Voltar</button>
- <div class="row"><div class="avatar">${esc((p.name||'?')[0])}</div><div><h1>${esc(p.name)}</h1><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
+ <div class="row"><div class="avatar" title="${esc(p.category||'Profissional')}">${categoryIcon(p.category)}</div><div><h1>${esc(p.name)}</h1><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
  <p class="sub">${esc(p.about||'')}</p><h2>Serviços disponíveis</h2>
  ${list.length?list.map(s=>`<div class="service-row ${selectedServiceId===s.id?'selected':''}"><b>${esc(s.title)}</b>${selectedServiceId===s.id?'<span class="verified">Selecionado</span>':''}<p class="sub">${esc(s.description||s.category||'')}</p><div class="between"><b class="price">${Number(s.price)>0?money(s.price):'Preço avulso não definido'}</b><button class="action" style="width:auto;margin:0" ${Number(s.price)>0?'':'disabled'} onclick="selectService('${p.id}','${s.id}')">${Number(s.price)>0?(selectedServiceId===s.id?'Selecionado':'Selecionar serviço'):'Indisponível'}</button></div>${Number(s.price)>0?'':'<p class="sub">Para contratar pelo fluxo atual, o profissional precisa cadastrar um preço no campo “Preço do serviço”.</p>'}</div>`).join(''):'<p class="sub">Este profissional ainda não cadastrou serviços individuais disponíveis para contratação.</p>'}
  <h2>Solicitar contratação</h2>
