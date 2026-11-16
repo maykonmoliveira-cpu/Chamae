@@ -58,13 +58,14 @@ nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weigh
 
 const SUPABASE_URL='https://rteeynlktogwjbjxezwr.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_p1JjWeb5D4l-TIGIKK5e8w_5z5j4_V6';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const db=window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY) : null;
 
 const $=id=>document.getElementById(id);
 const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 let session=null,user=null,profile=null,tab='home',selected=null,duration='half',tip=0;
 let providers=[],services=[],bookings=[],activeBooking=null,messages=[];
-let favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');
+let favorites=[];
+try{favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');if(!Array.isArray(favorites))favorites=[]}catch(e){favorites=[]}
 let realtime=null,bookingRealtime=null,selectedProviderId=null,selectedServiceId=null;
 
 function card(s){return `<section class="card">${s}</section>`}
@@ -74,7 +75,7 @@ function notice(s,kind='notice'){return `<div class="${kind}">${esc(s)}</div>`}
 function localDate(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 
 async function init(){
-  if(!window.supabase){$('app').innerHTML=notice('Falha ao carregar Supabase. Verifique a conexão.','error');return}
+  if(!window.supabase || !db){$('app').innerHTML=notice('Não foi possível carregar o Supabase. Verifique a conexão e recarregue a página.','error');return}
   const {data,error}=await db.auth.getSession();
   if(error)console.error(error);
   session=data.session;user=session?.user||null;
@@ -232,7 +233,9 @@ async function searchProviders(value){
   const serviceText=services.filter(s=>s.provider_id===p.id&&s.available).map(s=>[s.title,s.category,s.description].join(' ')).join(' ');
   return !q||normalize(providerText+' '+serviceText).includes(q);
  });
+ if(request!==searchRequest||!$('providerResults'))return;
  if(!list.length){el.innerHTML=card('<p class="sub">Nenhum profissional ou serviço encontrado.</p>');return;}
+ el.innerHTML=card('<p class="sub">Buscando profissionais...</p>');
  const results=await Promise.all(list.map(async p=>{
   p._verified=await isVerified(p.id);
   return providerCard(p);
@@ -255,22 +258,25 @@ async function providerDetail(p){
 }
 function selectProvider(id){selected=id;selectedServiceId=null;render()}
 function selectService(providerId,serviceId){selected=providerId;selectedServiceId=serviceId;render()}
-function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];localStorage.setItem('chamae_favorites',JSON.stringify(favorites));render()}
+function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];try{localStorage.setItem('chamae_favorites',JSON.stringify(favorites))}catch(e){console.warn('Não foi possível salvar favoritos neste aparelho.',e)}render()}
 
 async function createBooking(){
  if(!user)return alert('Entre na sua conta.');
- const p=providers.find(x=>x.id===selected);if(!p)return;
+ const p=providers.find(x=>x.id===selected);
+ if(!p)return alert('Selecione um profissional.');
  const s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p.id&&x.available);
- if(selectedServiceId&&!s)return alert('Este serviço não está mais disponível. Atualize a página e escolha outro.');
+ if(!selectedServiceId||!s)return alert('Selecione um serviço disponível antes de solicitar a contratação.');
+ if(p.user_id===user.id)return alert('Você não pode contratar seu próprio serviço.');
+ const verified=await isVerified(p.id);
+ if(!verified)return alert('Este profissional ainda não possui o selo Chamaê Verificado e não pode receber solicitações nesta versão.');
  const date=$('serviceDate')?.value,notes=$('serviceNotes')?.value.trim()||'';
  if(!date||date<localDate())return alert('Escolha uma data válida, a partir de hoje.');
- const base=Number(s?.price||p.half_day_price||p.full_day_price||0);
- if(!Number.isFinite(base)||base<=0)return alert('Preço inválido. Peça ao profissional para atualizar o anúncio.');
- const payload={client_id:user.id,provider_id:p.id,provider_name:p.name,service_category:s?.category||s?.title||p.category,duration:'Serviço avulso',service_date:date,notes,base_amount:base,tip_amount:0,total_amount:base+0,status:'pending'};
- if(s)payload.service_id=s.id;
+ const base=Number(s.price??s.half_day_price??s.full_day_price??0);
+ if(!Number.isFinite(base)||base<=0)return alert('Este serviço não possui preço válido. Peça ao profissional para atualizar o anúncio.');
+ const payload={client_id:user.id,provider_id:p.id,provider_name:p.name,service_category:s.category||s.title,duration:'Serviço avulso',service_date:date,notes,base_amount:base,tip_amount:0,total_amount:base,status:'pending',service_id:s.id};
  const {error}=await db.from('bookings').insert(payload);
  if(error)return alert('Não foi possível criar a solicitação: '+error.message);
- selected=null;selectedServiceId=null;tab='orders';await loadBookings();render();alert('Solicitação salva no Supabase!');
+ selected=null;selectedServiceId=null;tab='orders';await loadBookings();render();alert('Solicitação enviada. Ela ficará aguardando a resposta do profissional.');
 }
 
 function statusLabel(s){return ({pending:'Aguardando prestador',accepted:'Serviço aceito',rejected:'Solicitação recusada',in_progress:'Atendimento em andamento',completed:'Serviço concluído',cancelled:'Cancelado'})[s]||s}
@@ -283,19 +289,31 @@ function bookingActions(b){
  return html;
 }
 async function changeBookingStatus(id,newStatus){
+ const b=bookings.find(x=>x.id===id);
+ if(!b||!user)return alert('Solicitação não encontrada. Atualize a tela.');
+ const isProvider=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id);
+ const isClient=b.client_id===user.id;
+ const allowed={
+  pending:{accepted:isProvider,rejected:isProvider,cancelled:isClient},
+  accepted:{in_progress:isProvider,cancelled:isClient},
+  in_progress:{completed:isProvider}
+ };
+ if(!allowed[b.status]?.[newStatus])return alert('Esta ação não é permitida para sua conta ou para o estado atual do serviço.');
  const labels={accepted:'aceitar este serviço',rejected:'rejeitar esta solicitação',in_progress:'iniciar este atendimento',completed:'concluir este atendimento',cancelled:'cancelar esta solicitação'};
- if(!labels[newStatus])return;if(!confirm('Deseja '+labels[newStatus]+'?'))return;
- const {data,error}=await db.from('bookings').update({status:newStatus}).eq('id',id).select('id,status').maybeSingle();
+ if(!labels[newStatus]||!confirm('Deseja '+labels[newStatus]+'?'))return;
+ const {data,error}=await db.from('bookings').update({status:newStatus}).eq('id',id).eq('status',b.status).select('id,status').maybeSingle();
  if(error)return alert('Não foi possível atualizar: '+error.message);
- if(!data)return alert('Nenhuma alteração foi confirmada. Verifique sua permissão e atualize a tela.');
+ if(!data)return alert('A solicitação foi alterada por outra pessoa ou sua permissão foi negada. Atualize a tela.');
  await loadBookings();render();alert('Status atualizado: '+statusLabel(data.status)+'.');
 }
+
 function orders(){
  if(!user)return authView();
  return `<h1>Meus serviços</h1><p class="sub">Acompanhe suas solicitações e atendimentos.</p>`+
  (bookings.length?bookings.map(b=>card(`<div class="between"><b>${esc(b.service_category)} · ${esc(b.provider_name)}</b><span class="tag">${esc(statusLabel(b.status))}</span></div><p class="sub">${esc(b.duration)} · ${esc(b.service_date||'')}</p><p class="sub">${esc(b.notes||'Sem observações.')}</p><b class="price">${money(b.total_amount)}</b><div class="between"><button class="link" onclick="openChat('${b.id}')">Abrir chat ›</button></div>${bookingActions(b)}${b.client_id===user.id&&b.status==='completed'?`<label class="sub">Avalie este serviço</label><select id="rating-${b.id}"><option value="5">5 estrelas</option><option value="4">4 estrelas</option><option value="3">3 estrelas</option><option value="2">2 estrelas</option><option value="1">1 estrela</option></select><input id="comment-${b.id}" placeholder="Comentário (opcional)"><button class="action secondary" onclick="submitRating('${b.id}','${b.provider_id}')">Enviar avaliação</button>`:''}`)).join(''):card('<p class="sub">Você ainda não possui solicitações.</p>'));
 }
 async function submitRating(bookingId,providerId){
+ const booking=bookings.find(b=>b.id===bookingId);if(!booking||booking.client_id!==user?.id||booking.provider_id!==providerId||booking.status!=='completed')return alert('Só é possível avaliar um serviço concluído que você contratou.');
  const score=Number($('rating-'+bookingId)?.value),comment=$('comment-'+bookingId)?.value.trim()||null;
  if(!Number.isInteger(score)||score<1||score>5)return alert('Selecione uma nota válida.');
  const {error}=await db.from('ratings').insert({booking_id:bookingId,client_id:user.id,provider_id:providerId,score,comment});
@@ -306,9 +324,11 @@ function favoritesPage(){
  if(!user)return authView();const list=providers.filter(p=>favorites.includes(p.id));
  return `<h1>Favoritos</h1><p class="sub">Favoritos salvos neste aparelho.</p>`+(list.length?list.map(p=>card(`<b>${esc(p.name)}</b><p class="sub">${esc(p.category)} · ${esc(p.area||'')}</p><button class="link" onclick="toggleFavorite('${p.id}')">Remover</button><button class="link" onclick="selectProvider('${p.id}');tab='home';render()">Ver perfil ›</button>`)).join(''):card('<p class="sub">Nenhum profissional favoritado.</p>'));
 }
-async function openChat(id){activeBooking=id;tab='chat';await loadMessages();render();subscribeChat()}
+async function openChat(id){const b=bookings.find(x=>x.id===id);if(!b||!user||!(b.client_id===user.id||providers.some(p=>p.id===b.provider_id&&p.user_id===user.id)))return alert('Você não tem acesso ao chat desta solicitação.');activeBooking=id;tab='chat';await loadMessages();render();subscribeChat()}
 async function loadMessages(){
- if(!activeBooking)return;
+ if(!activeBooking||!user)return;
+ const b=bookings.find(x=>x.id===activeBooking);
+ if(!b||!(b.client_id===user.id||providers.some(p=>p.id===b.provider_id&&p.user_id===user.id))){messages=[];return;}
  const {data,error}=await db.from('messages').select('*').eq('booking_id',activeBooking).order('created_at');
  if(error){console.error(error);messages=[]}else messages=data||[];
 }
@@ -318,7 +338,9 @@ function chatView(){
  (activeBooking?card(messages.map(m=>`<div class="chat ${m.sender_id===user.id?'mine':''}">${esc(m.body)}</div>`).join('')+`<input id="chatText" placeholder="Digite sua mensagem"><button class="action" onclick="sendMessage()">Enviar</button>`):card('<p class="sub">Abra o chat a partir de uma solicitação na aba Serviços.</p>'));
 }
 async function sendMessage(){
- const el=$('chatText'),body=el?.value.trim();if(!body||!activeBooking)return;
+ const el=$('chatText'),body=el?.value.trim();if(!body||!activeBooking||!user)return;
+ const b=bookings.find(x=>x.id===activeBooking);
+ if(!b||!(b.client_id===user.id||providers.some(p=>p.id===b.provider_id&&p.user_id===user.id)))return alert('Você não tem permissão para enviar mensagens neste chat.');
  const {error}=await db.from('messages').insert({booking_id:activeBooking,sender_id:user.id,body});
  if(error)return alert('Falha ao enviar: '+error.message);
  await loadMessages();render();
@@ -394,6 +416,7 @@ async function saveProvider(id=''){
  await loadProviders();selectedProviderId=id||null;render();alert(id?'Perfil profissional atualizado!':'Profissional cadastrado!');
 }
 async function deleteProvider(id){
+ if(!providers.some(p=>p.id===id&&p.user_id===user?.id))return alert('Você não tem permissão para excluir este perfil.');
  if(!confirm('Excluir este perfil profissional? Os serviços vinculados também serão excluídos.'))return;
  const {error}=await db.from('providers').delete().eq('id',id).eq('user_id',user.id);
  if(error)return alert('Não foi possível excluir: '+error.message);
@@ -419,17 +442,19 @@ function editServiceForm(id){
  const el=$('serviceEditor');if(el)el.innerHTML=serviceForm(s.provider_id,s);else{render();setTimeout(()=>editServiceForm(id),0)}
 }
 async function saveService(providerId,id=''){
+ const owned=providers.some(p=>p.id===providerId&&p.user_id===user?.id);if(!owned)return alert('Você não tem permissão para cadastrar serviços neste perfil.');
  const payload={provider_id:providerId,title:$('editServiceTitle').value.trim(),category:$('editServiceCategory').value.trim(),description:$('editServiceDescription').value.trim(),price:$('editServicePrice').value?Number($('editServicePrice').value):null,half_day_price:$('editServiceHalf').value?Number($('editServiceHalf').value):null,full_day_price:$('editServiceFull').value?Number($('editServiceFull').value):null,available:true};
  if(!payload.title||!payload.category)return alert('Informe o nome e a categoria do serviço.');
  if([payload.price,payload.half_day_price,payload.full_day_price].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))return alert('Informe preços válidos.');
  if(!payload.price&&!payload.half_day_price&&!payload.full_day_price)return alert('Informe pelo menos um preço.');
- const query=id?db.from('services').update(payload).eq('id',id):db.from('services').insert(payload);
+ const query=id?db.from('services').update(payload).eq('id',id).eq('provider_id',providerId):db.from('services').insert(payload);
  const {error}=await query;if(error)return alert('Não foi possível salvar o serviço: '+error.message);
  await loadServices();render();alert(id?'Serviço atualizado!':'Serviço cadastrado!');
 }
 async function deleteService(id){
+ const service=services.find(s=>s.id===id);if(!service||!providers.some(p=>p.id===service.provider_id&&p.user_id===user?.id))return alert('Você não tem permissão para excluir este serviço.');
  if(!confirm('Excluir este serviço?'))return;
- const {error}=await db.from('services').delete().eq('id',id);
+ const {error}=await db.from('services').delete().eq('id',id).eq('provider_id',service.provider_id);
  if(error)return alert('Não foi possível excluir: '+error.message);
  await loadServices();render();alert('Serviço excluído.');
 }
@@ -453,10 +478,6 @@ async function render(){
  const result=view();
  $('app').innerHTML=(result instanceof Promise)?await result:result;
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
- if(tab==='provider'&&selectedProviderId){
-  const target=$('providerEditor');
-  if(target&&window.pendingProviderEditor){target.innerHTML=window.pendingProviderEditor;window.pendingProviderEditor=null}
- }
 }
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{
  tab=b.dataset.tab;
@@ -464,7 +485,7 @@ document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()
  if(tab==='chat'&&activeBooking){loadMessages().then(()=>{render();subscribeChat()})}
  else render();
 }));
-db.auth.onAuthStateChange((_event,newSession)=>{
+if(db)db.auth.onAuthStateChange((_event,newSession)=>{
  setTimeout(async()=>{
   session=newSession;user=newSession?.user||null;
   if(user){await loadProfile();if(!profile){try{await ensureProfile()}catch(e){console.error(e)}}
