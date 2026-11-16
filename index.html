@@ -32,6 +32,11 @@ nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weigh
 .notice{padding:11px;border-radius:12px;background:#FFF6E8;color:#84500B;font-size:12px;line-height:1.45;margin:12px 0}
 .error{color:#B42318;background:#FEF3F2;padding:10px;border-radius:10px;font-size:13px}.option{display:block;width:100%;text-align:left;background:white;border:1px solid #E1E7EF;border-radius:12px;padding:13px;margin:8px 0}
 .option.selected{border:2px solid var(--blue);background:#EDF4FF}.service-row{border-top:1px solid var(--line);padding:11px 0}
+.profession-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0 18px}
+.profession-item{border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 5px;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--blue);font-size:12px;font-weight:800;text-align:center;overflow-wrap:anywhere}
+.profession-item .profession-icon{font-size:25px;line-height:1.1}
+.profession-item:active{background:#EDF4FF;border-color:var(--blue)}
+@media(min-width:520px){.profession-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(min-width:900px){main{max-width:1080px;padding:28px 28px 110px}nav{justify-content:center;gap:30px}nav button{font-size:13px;padding:10px 14px}.card{padding:20px}}
 </style>
 </head>
@@ -143,19 +148,98 @@ async function logout(){
 function providerCard(p){
  const verified=!!p._verified;
  const serviceCount=services.filter(s=>s.provider_id===p.id).length;
- return card(`<div class="row"><div class="avatar">${esc((p.name||'?')[0])}</div><div style="flex:1"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
+ return card(`<div class="row"><div class="avatar">${professionIcon(p.category)}</div><div style="flex:1"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Chamaê Verificado</span>':''}</div></div>
  <div class="between"><span class="price">${serviceCount} serviço(s) cadastrado(s)</span><button class="link" onclick="toggleFavorite('${p.id}')">${favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}</button><button class="link" onclick="selectProvider('${p.id}')">Ver serviços ›</button></div>`);
+}
+const PROFESSION_CATALOG=[
+ {name:'Eletricista',icon:'⚡'},{name:'Encanador',icon:'🔧'},
+ {name:'Diarista',icon:'🧹'},{name:'Cuidadora de idosos',icon:'🤝'},
+ {name:'Personal trainer',icon:'🏋️'},{name:'Professor de música',icon:'🎵'},
+ {name:'Professor de idiomas',icon:'🌎'},{name:'Babá',icon:'🧸'},
+ {name:'Pedreiro',icon:'🧱'},{name:'Jardineiro',icon:'🌱'},
+ {name:'Serviços gerais',icon:'🧰'},{name:'Multi serviços',icon:'🛠️'},
+ {name:'Manicure',icon:'💅'},{name:'Cabeleireiro',icon:'💇'},
+ {name:'Barbeiro',icon:'💈'},{name:'Depilação',icon:'✨'},
+ {name:'Pintor',icon:'🖌️'},{name:'Marceneiro',icon:'🪚'},
+ {name:'Montador de móveis',icon:'🪑'},{name:'Serralheiro',icon:'🛠️'},
+ {name:'Vidraceiro',icon:'🪟'},{name:'Chaveiro',icon:'🔑'},
+ {name:'Mecânico',icon:'🚗'},{name:'Motoboy / Entregador',icon:'🛵'},
+ {name:'Frete e mudança',icon:'🚚'},{name:'Técnico de informática',icon:'💻'},
+ {name:'Técnico de ar-condicionado',icon:'❄️'},{name:'Costureira',icon:'🧵'},
+ {name:'Cozinheiro(a)',icon:'👨‍🍳'},{name:'Garçom / Garçonete',icon:'🍽️'},
+ {name:'Fotógrafo',icon:'📷'},{name:'Designer',icon:'🎨'},
+ {name:'Professor particular',icon:'📚'},{name:'Adestrador de animais',icon:'🐕'},
+ {name:'Cuidador de pets',icon:'🐾'},{name:'Babá de pets / Pet sitter',icon:'🐶'},
+ {name:'Personal organizer',icon:'🗂️'},{name:'Massagista',icon:'💆'},
+ {name:'Decorador(a)',icon:'🪴'},{name:'Outros serviços',icon:'🧰'}
+];
+function professionIcon(name){
+ const key=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const found=PROFESSION_CATALOG.find(x=>x.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===key);
+ if(found)return found.icon;
+ if(key.includes('limp')||key.includes('diar'))return '🧹';
+ if(key.includes('idos')||key.includes('cuidad'))return '🤝';
+ if(key.includes('multi')||key.includes('servicos gerais'))return '🛠️';
+ if(key.includes('musica'))return '🎵';
+ if(key.includes('idioma'))return '🌎';
+ if(key.includes('baba'))return '🧸';
+ if(key.includes('personal trainer'))return '🏋️';
+ if(key.includes('eletric'))return '⚡';
+ if(key.includes('encan')||key.includes('hidraul'))return '🔧';
+ if(key.includes('beleza')||key.includes('manicur'))return '💅';
+ if(key.includes('constr')||key.includes('pedr'))return '🧱';
+ if(key.includes('jard'))return '🌱';
+ if(key.includes('transp')||key.includes('frete'))return '🚚';
+ return '🧰';
+}
+function professionCategories(){
+ const names=[...PROFESSION_CATALOG.map(x=>x.name)];
+ providers.forEach(p=>{if(p.category&&p.category.trim())names.push(p.category.trim())});
+ services.forEach(s=>{if(s.category&&s.category.trim())names.push(s.category.trim())});
+ const unique=new Map();
+ names.forEach(name=>{const key=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();if(!unique.has(key))unique.set(key,name)});
+ return [...unique.values()].sort((a,b)=>a.localeCompare(b,'pt-BR'));
 }
 async function home(){
  if(!user)return authView();
- const q=(window.searchQuery||'').toLowerCase();
- const list=providers.filter(p=>p.available&&(p.name+' '+p.category+' '+(p.area||'')).toLowerCase().includes(q));
- let out=`<h1>Encontre profissionais</h1><p class="sub">Serviços e profissionais disponíveis em Joinville e região.</p>
- <input placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="window.searchQuery=this.value;render()">
- <div class="chips">${['Diarista','Manicure','Eletricista','Encanador'].map(c=>`<button class="chip" onclick="window.searchQuery='${c}';render()">${c}</button>`).join('')}<button class="chip" onclick="window.searchQuery='';render()">Todos</button></div>`;
+ let out=`<h1>Encontre profissionais</h1>
+ <p class="sub">Encontre profissionais por profissão, especialidade ou serviço em Joinville e região.</p>
+ <input id="searchInput" placeholder="Buscar profissão, serviço ou bairro" value="${esc(window.searchQuery||'')}" oninput="searchProviders(this.value)">
+ <h2>Explore por profissão</h2>
+ <div class="profession-grid">${professionCategories().map(name=>`<button class="profession-item" onclick="chooseProfession(decodeURIComponent('${encodeURIComponent(name)}'))"><span class="profession-icon">${professionIcon(name)}</span><span>${esc(name)}</span></button>`).join('')}</div>
+ <div id="providerResults">${card('<p class="sub">Carregando profissionais...</p>')}</div>`;
  if(selected){const p=providers.find(x=>x.id===selected);if(p)return out+await providerDetail(p)}
- return out+(list.length? (await Promise.all(list.map(async p=>{p._verified=await isVerified(p.id);return providerCard(p)}))).join(''):card('<p class="sub">Nenhum prestador disponível encontrado.</p>'));
+ setTimeout(()=>searchProviders(window.searchQuery||''),0);
+ return out;
 }
+function chooseProfession(name){
+ window.searchQuery=name;
+ searchProviders(name);
+ const input=$('searchInput');if(input)input.value=name;
+}
+
+let searchRequest=0;
+async function searchProviders(value){
+ window.searchQuery=value;
+ const request=++searchRequest;
+ const el=$('providerResults');
+ if(!el)return;
+ const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const q=normalize(value).trim();
+ const list=providers.filter(p=>{
+  if(!p.available)return false;
+  const providerText=normalize([p.name,p.category,p.area,p.about].join(' '));
+  const serviceText=services.filter(s=>s.provider_id===p.id&&s.available).map(s=>[s.title,s.category,s.description].join(' ')).join(' ');
+  return !q||normalize(providerText+' '+serviceText).includes(q);
+ });
+ if(!list.length){el.innerHTML=card('<p class="sub">Nenhum profissional ou serviço encontrado.</p>');return;}
+ const results=await Promise.all(list.map(async p=>{
+  p._verified=await isVerified(p.id);
+  return providerCard(p);
+ }));
+ if(request===searchRequest&&$('providerResults'))$('providerResults').innerHTML=results.join('');
+}
+
 async function providerDetail(p){
  const list=services.filter(s=>s.provider_id===p.id&&s.available);
  const verified=await isVerified(p.id);
@@ -283,7 +367,11 @@ function newProviderForm(){
 function providerForm(p=null){
  return card(`<h2>${p?'Editar profissional':'Novo profissional'}</h2>
  <input id="editProvName" placeholder="Nome profissional" value="${esc(p?.name||profile?.full_name||'')}">
- <input id="editProvCategory" placeholder="Categoria principal (ex.: Diarista)" value="${esc(p?.category||'')}">
+ <label class="sub" for="editProvCategory">Profissão / categoria principal</label>
+ <select id="editProvCategory">
+ ${(()=>{const current=p?.category||'';const opts=PROFESSION_CATALOG.map(c=>c.name);if(current&&!opts.some(x=>x.toLowerCase()===current.toLowerCase()))opts.push(current);return opts.map(x=>`<option value="${esc(x)}" ${current===x?'selected':''}>${esc(x)}</option>`).join('')})()}
+ </select>
+ <p class="sub">Escolha “Multi serviços” se você oferece diferentes tipos de trabalho. Depois, cadastre cada atividade separadamente em “Adicionar serviço”.</p>
  <input id="editProvArea" placeholder="Bairro/região de atendimento" value="${esc(p?.area||'')}">
  <input id="editProvHalf" type="number" min="0" step="0.01" placeholder="Preço de referência — meia diária" value="${p?.half_day_price??''}">
  <input id="editProvFull" type="number" min="0" step="0.01" placeholder="Preço de referência — diária completa" value="${p?.full_day_price??''}">
