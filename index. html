@@ -45,9 +45,10 @@ nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weigh
 <nav>
 <button data-tab="home" class="active">Início</button><button data-tab="orders">Serviços</button><button data-tab="favorites">Favoritos</button><button data-tab="chat">Chat</button><button data-tab="provider">Área profissional</button><button data-tab="admin" id="adminTab" style="display:none">Administração</button><button data-tab="profile">Perfil</button>
 </nav>
-<div class="small">Chamaê • painel administrativo integrado</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
+const SUPABASE_URL='https://rteeynlktogwjbjxezwr.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_p1JjWeb5D4l-TIGIKK5e8w_5z5j4_V6';
+
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 'use strict';
 const SUPABASE_URL='https://rteeynlktogwjbjxezwr.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_p1JjWeb5D4l-TIGIKK5e8w_5z5j4_V6';
