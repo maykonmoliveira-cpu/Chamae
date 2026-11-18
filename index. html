@@ -171,7 +171,37 @@ function selectProvider(id){selected=id;selectedServiceId=null;render()}
 function selectService(pid,sid){selected=pid;selectedServiceId=sid;render()}
 async function providerDetail(p){let list=services.filter(s=>s.provider_id===p.id&&s.available),verified=await isVerified(p.id);return card(`<button class="link" onclick="selected=null;render()">‹ Voltar</button><div class="row"><div class="avatar">${icon(p.category)}</div><div><h1>${esc(p.name)}</h1><p class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</p><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Perfil Verificado</span>':''}</div></div><p class="sub">${esc(p.about||'')}</p><h2>Serviços disponíveis</h2>${list.map(s=>{let opts=[['single','Serviço avulso',s.price],['half','Meia diária (4 horas)',s.half_day_price],['full','Diária completa (8 horas)',s.full_day_price]].filter(x=>Number(x[2])>0);return `<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.description||s.category||'')}</p><p class="sub">${opts.map(x=>x[1]+': '+money(x[2])).join(' · ')||'Preço não definido'}</p><button class="action" ${opts.length?'':'disabled'} onclick="selectService(${arg(p.id)},${arg(s.id)})">${selectedServiceId===s.id?'Selecionado':'Selecionar serviço'}</button></div>`}).join('')||'<p class="sub">Nenhum serviço disponível.</p>'}<h2>Solicitar contratação</h2><label class="sub">Modalidade</label><select id="bookingDuration"><option value="single">Serviço avulso</option><option value="half">Meia diária (4 horas)</option><option value="full">Diária completa (8 horas)</option></select><label class="sub">Data</label><input id="serviceDate" type="date" min="${dateToday()}"><label class="sub">Horário</label><input id="serviceTime" type="time"><textarea id="serviceNotes" placeholder="Observações"></textarea><p class="notice">A solicitação depende do aceite do profissional. Somente modalidades com preço cadastrado podem ser contratadas.</p>${btn('Solicitar serviço','createBooking()')}`)}
 function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];localStorage.setItem('chamae_favorites',JSON.stringify(favorites));render()}
-async function createBooking(){if(!user)return alert('Entre na sua conta.');let p=providers.find(x=>x.id===selected),s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p?.id&&x.available);if(!p||!s)return alert('Selecione um profissional e um serviço.');if(p.user_id===user.id)return alert('Você não pode contratar seu próprio serviço.');if(!await isVerified(p.id))return alert('Este profissional ainda não possui verificação aprovada.');let mode=$('bookingDuration').value,price=mode==='half'?s.half_day_price:mode==='full'?s.full_day_price:s.price;if(!Number.isFinite(Number(price))||Number(price)<=0)return alert('Esta modalidade não possui preço cadastrado.');let date=$('serviceDate').value,time=$('serviceTime').value,notes=$('serviceNotes').value.trim();if(!date||date<dateToday())return alert('Escolha uma data válida.');if(!time)return alert('Informe o horário.');let duration=mode==='half'?'half':mode==='full'?'full':'single';let{error}=await db.from('bookings').insert({client_id:user.id,provider_id:p.id,service_id:s.id,duration,service_date:date,service_time:time,notes,tip_amount:0});if(error)return alert('Não foi possível solicitar: '+error.message);selected=selectedServiceId=selectedCategory=null;tab='orders';await loadBookings();await loadNotifications();await render();alert('Solicitação enviada! O profissional receberá uma notificação.')}
+async function createBooking(){
+ if(!user)return alert('Entre na sua conta.');
+ const p=providers.find(x=>x.id===selected);
+ const s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p?.id&&x.available===true);
+ if(!p||!s)return alert('Selecione um profissional e um serviço.');
+ if(p.user_id===user.id)return alert('Você não pode contratar seu próprio serviço.');
+ if(!await isVerified(p.id))return alert('Este profissional ainda não possui verificação aprovada.');
+ const duration=$('bookingDuration')?.value;
+ if(!['single','half','full'].includes(duration))return alert('Selecione uma modalidade válida.');
+ const rawPrice=duration==='half'?s.half_day_price:duration==='full'?s.full_day_price:s.price;
+ const price=Number(rawPrice);
+ if(rawPrice===null||rawPrice===undefined||rawPrice===''||!Number.isFinite(price)||price<=0)
+  return alert('Esta modalidade não possui preço cadastrado para o serviço selecionado.');
+ const date=$('serviceDate')?.value;
+ const time=$('serviceTime')?.value;
+ const notes=$('serviceNotes')?.value?.trim()||'';
+ if(!date||date<dateToday())return alert('Escolha uma data válida.');
+ if(!time)return alert('Informe o horário.');
+ const payload={client_id:user.id,provider_id:p.id,service_id:s.id,duration,service_date:date,service_time:time,notes,tip_amount:0};
+ const {error}=await db.from('bookings').insert(payload);
+ if(error){
+  console.error('Erro ao criar contratação:',error);
+  return alert('Não foi possível solicitar: '+error.message);
+ }
+ selected=selectedServiceId=selectedCategory=null;
+ tab='orders';
+ await loadBookings();
+ await loadNotifications();
+ await render();
+ alert('Solicitação enviada! O profissional receberá uma notificação.');
+}
 function statusLabel(s){return({pending:'Aguardando prestador',accepted:'Serviço aceito',rejected:'Solicitação recusada',in_progress:'Atendimento em andamento',completed:'Serviço concluído',cancelled:'Cancelado'})[s]||s}
 function durationLabel(d){return({single:'Serviço avulso',half:'Meia diária · até 4 horas',full:'Diária completa · até 8 horas'})[d]||d||'Modalidade não informada'}
 function timeline(b){return [['Solicitado',b.created_at],['Aceito',b.accepted_at],['Iniciado',b.started_at],['Concluído',b.completed_at],['Cancelado',b.cancelled_at],['Recusado',b.rejected_at]].filter(x=>x[1]).map(x=>`<div class="sub">• ${x[0]}: ${new Date(x[1]).toLocaleString('pt-BR')}</div>`).join('')}
