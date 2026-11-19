@@ -1,4 +1,4 @@
-   <!doctype html>
+    <!doctype html>
             <html lang="pt-BR">
             <head>
             <meta charset="utf-8">
@@ -37,6 +37,13 @@
             .category-item{width:100%;display:flex;align-items:center;gap:15px;padding:13px 15px;background:#fff;border:1px solid #DCE5F1;border-radius:13px;color:#172B45;text-align:left;font-weight:850}
             .category-icon{width:42px;font-size:27px;text-align:center}.category-arrow{margin-left:auto;color:var(--blue);font-size:22px}
             .category-item.selected{border:2px solid var(--blue);background:#EDF4FF}
+            .full-screen-view{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+            .full-screen-header{flex:0 0 auto;min-height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top));box-shadow:0 1px 5px #0001}
+            .full-screen-header button{border:0;background:#EDF4FF;color:var(--blue);border-radius:10px;padding:10px 13px;font-weight:850;white-space:nowrap}
+            .full-screen-header strong{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .full-screen-content{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:12px 15px 28px;max-width:760px;width:100%;margin:0 auto;-webkit-overflow-scrolling:touch}
+            .full-screen-content .card{margin-top:8px}
+
             @media(min-width:900px){main{max-width:1080px;padding:28px 28px 110px}nav{justify-content:center;gap:30px}nav button{font-size:13px;padding:10px 14px}.card{padding:20px}}
             </style>
             </head>
@@ -253,23 +260,25 @@
              if(!user)return authView();
              const q=(window.searchQuery||'').trim();
              const cats=[...new Set([...BASE_CATEGORIES,...providers.map(p=>p.category).filter(Boolean),...services.filter(s=>s.available===true).map(s=>s.category).filter(Boolean)])];
-             let html=`<h1>Encontre profissionais</h1><p class="sub">Escolha uma categoria e encontre profissionais em Joinville e região.</p><input id="providerSearch" placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="searchAndRender(this)">`;
-             if(providersLoadError||servicesLoadError){
-              html+=notice('Não foi possível carregar todos os cadastros. '+[providersLoadError,servicesLoadError].filter(Boolean).join(' · '),'error');
-             }
-             html+=`<div class="category-list">${cats.filter(c=>!q||normalizeCategory(c).includes(normalizeCategory(q))||providers.some(p=>providerMatchesCategory(p,c)&&providerMatchesSearch(p,q))).map(c=>`<button class="category-item" onclick="openCategory(${arg(c)})"><span class="category-icon">${icon(c)}</span>${esc(c)}<span class="category-arrow">›</span></button>`).join('')}</div>`;
              if(selected){
               const p=providers.find(x=>x.id===selected);
-              if(p&&p.available===true)return html+await providerDetail(p);
+              if(p&&p.available===true){
+               const detail=await providerDetail(p);
+               return `<section class="full-screen-view"><div class="full-screen-header"><button onclick="selected=null;selectedServiceId=null;render()">← Voltar</button><strong>Perfil do profissional</strong></div><div class="full-screen-content">${detail}</div></section>`;
+              }
               selected=null;selectedServiceId=null;
              }
              if(selectedCategory){
               let list=providers.filter(p=>p.available===true&&providerMatchesCategory(p,selectedCategory)&&providerMatchesSearch(p,q));
               list=await verifiedProviders(list);
-              html+=`<h2>${icon(selectedCategory)} ${esc(selectedCategory)}</h2><button class="link" onclick="selectedCategory=null;render()">‹ Voltar</button>`;
-              html+=list.length?list.map(providerCard).join(''):card('<p class="sub">Não encontramos profissionais verificados nesta categoria. Confira se há profissionais cadastrados, disponíveis e com verificação aprovada no Chamaê.</p>');
-              return html;
+              const results=list.length?list.map(providerCard).join(''):card('<p class="sub">Não encontramos profissionais verificados nesta categoria. Confira se há profissionais cadastrados, disponíveis e com verificação aprovada no Chamaê.</p>');
+              return `<section class="full-screen-view"><div class="full-screen-header"><button onclick="selectedCategory=null;selected=null;render()">← Voltar</button><strong>${icon(selectedCategory)} ${esc(selectedCategory)}</strong></div><div class="full-screen-content">${providersLoadError||servicesLoadError?notice('Não foi possível carregar todos os cadastros. '+[providersLoadError,servicesLoadError].filter(Boolean).join(' · '),'error'):''}${results}</div></section>`;
              }
+             let html=`<h1>Encontre profissionais</h1><p class="sub">Escolha uma categoria e encontre profissionais em Joinville e região.</p><input id="providerSearch" placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="searchAndRender(this)">`;
+             if(providersLoadError||servicesLoadError){
+              html+=notice('Não foi possível carregar todos os cadastros. '+[providersLoadError,servicesLoadError].filter(Boolean).join(' · '),'error');
+             }
+             html+=`<div class="category-list">${cats.filter(c=>!q||normalizeCategory(c).includes(normalizeCategory(q))||providers.some(p=>providerMatchesCategory(p,c)&&providerMatchesSearch(p,q))).map(c=>`<button class="category-item" onclick="openCategory(${arg(c)})"><span class="category-icon">${icon(c)}</span>${esc(c)}<span class="category-arrow">›</span></button>`).join('')}</div>`;
              const matches=providers.filter(p=>p.available===true&&providerMatchesSearch(p,q));
              if(q){
               const verified=await verifiedProviders(matches);
