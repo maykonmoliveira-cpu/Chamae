@@ -1,4 +1,4 @@
-    <!doctype html>
+   <!doctype html>
             <html lang="pt-BR">
             <head>
             <meta charset="utf-8">
@@ -57,7 +57,7 @@
             const $=id=>document.getElementById(id);
             const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
             let session=null,user=null,profile=null,tab='home',selected=null,selectedServiceId=null,selectedCategory=null,selectedProviderId=null,activeBooking=null;
-            let providers=[],services=[],bookings=[],messages=[],notifications=[],ratedBookingIds=[],loyaltyBonuses=[],loyaltyProgress={};
+            let providers=[],services=[],bookings=[],messages=[],notifications=[],ratedBookingIds=[],loyaltyBonuses=[],loyaltyProgress={};let providersLoadError='',servicesLoadError='';
             let favorites=[];try{favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}
             let chatRealtime=null,bookingRealtime=null,notificationRealtime=null;
             let renderVersion=0,bookingsLoadError='',chatLoadError='',notificationLoadError='';
@@ -88,8 +88,8 @@
              }
              profile=data;return profile;
             }
-            async function loadProviders(){let{data,error}=await db.from('providers').select('id,user_id,name,category,area,rating,half_day_price,full_day_price,about,available').order('created_at',{ascending:false});if(error){console.warn(error);providers=[]}else providers=data||[]}
-            async function loadServices(){let{data,error}=await db.from('services').select('*').order('created_at',{ascending:false});if(error){console.warn(error);services=[]}else services=data||[]}
+            async function loadProviders(){let{data,error}=await db.from('providers').select('id,user_id,name,category,area,rating,half_day_price,full_day_price,about,available').order('created_at',{ascending:false});if(error){console.warn('Falha ao carregar profissionais:',error);providers=[];providersLoadError=error.message||'Não foi possível carregar os profissionais.'}else{providers=data||[];providersLoadError=''}}
+            async function loadServices(){let{data,error}=await db.from('services').select('*').order('created_at',{ascending:false});if(error){console.warn('Falha ao carregar serviços:',error);services=[];servicesLoadError=error.message||'Não foi possível carregar os serviços.'}else{services=data||[];servicesLoadError=''}}
             async function loadBookings(){if(!user){bookings=[];bookingsLoadError='';return}let{data,error}=await db.from('bookings').select('*').order('created_at',{ascending:false});if(error){console.warn(error);bookings=[];bookingsLoadError=error.message||'Falha ao carregar contratações.'}else{bookings=data||[];bookingsLoadError=''}}
             async function loadNotifications(){if(!user){notifications=[];return}let{data,error}=await db.from('notifications').select('*').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(30);if(error){console.warn('Falha ao carregar notificações:',error);notifications=[];notificationLoadError=error.message||'Não foi possível carregar as notificações.'}else{notifications=data||[];notificationLoadError=''}}
             async function loadRated(){ratedBookingIds=[];let ids=bookings.filter(b=>b.client_id===user?.id&&b.status==='completed').map(b=>b.id);if(!ids.length)return;let{data,error}=await db.from('ratings').select('booking_id').in('booking_id',ids);if(!error)ratedBookingIds=(data||[]).map(x=>x.booking_id)}
@@ -235,15 +235,49 @@
             }
             async function refreshUserData(){await loadProfile();await checkAdmin();await loadProviders();await loadServices();await loadBookings();await loadNotifications();await loadRated();await loadLoyalty();await subscribeBookings();await subscribeNotifications()}
             async function logout(){const{error}=await db.auth.signOut();if(error)return alert('Não foi possível sair da conta: '+error.message);await applyAuthSession(null);tab='home';await render()}
+            function normalizeCategory(value=''){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+            function providerMatchesCategory(provider,category){
+             const target=normalizeCategory(category);
+             if(!target)return false;
+             const terms=[provider.category,provider.name,...services.filter(s=>s.provider_id===provider.id&&(s.available===true||s.available===undefined)).flatMap(s=>[s.category,s.title,s.description])].map(normalizeCategory).filter(Boolean);
+             return terms.some(term=>term===target||term.startsWith(target+' ')||target.startsWith(term+' ')||term.includes(target)||target.includes(term));
+            }
+            function providerMatchesSearch(provider,query=''){
+             const q=normalizeCategory(query);
+             if(!q)return true;
+             const terms=[provider.name,provider.area,provider.category,...services.filter(s=>s.provider_id===provider.id&&s.available===true).flatMap(s=>[s.title,s.category,s.description])].map(normalizeCategory).filter(Boolean);
+             return terms.some(term=>term.includes(q));
+            }
             function providerCard(p){let count=services.filter(s=>s.provider_id===p.id&&s.available===true).length;return card(`<div class="row"><div class="avatar">${icon(p.category)}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">${Number(p.rating)>0?'★ '+Number(p.rating).toFixed(1):'Sem avaliações'}</div>${p._verified?'<span class="verified">✓ Perfil Verificado</span>':''}</div></div><div class="between"><span class="price">${count} serviço(s)</span><button class="link" onclick="toggleFavorite(${arg(p.id)})">${favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}</button><button class="link" onclick="selectProvider(${arg(p.id)})">Ver serviços ›</button></div>`)}
             async function home(){
              if(!user)return authView();
-             let q=(window.searchQuery||'').toLowerCase().trim(),cats=[...new Set([...BASE_CATEGORIES,...providers.map(p=>p.category).filter(Boolean)])];
-             let html=`<h1>Encontre profissionais</h1><p class="sub">Escolha uma categoria e encontre profissionais em Joinville e região.</p><input id="providerSearch" placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="searchAndRender(this)"><div class="category-list">${cats.filter(c=>!q||c.toLowerCase().includes(q)||providers.some(p=>p.category?.toLowerCase()===c.toLowerCase()&&(p.name+' '+(p.area||'')).toLowerCase().includes(q))).map(c=>`<button class="category-item" onclick="openCategory(${arg(c)})"><span class="category-icon">${icon(c)}</span>${esc(c)}<span class="category-arrow">›</span></button>`).join('')}</div>`;
-             if(selected){let p=providers.find(x=>x.id===selected);if(p&&p.available)return html+await providerDetail(p);selected=null;selectedServiceId=null}
-             if(selectedCategory){let list=providers.filter(p=>p.available&&p.category?.toLowerCase()===selectedCategory.toLowerCase()&&(!q||(p.name+' '+(p.area||'')+' '+p.category+' '+services.filter(s=>s.provider_id===p.id&&s.available===true).map(s=>s.title+' '+s.category+' '+s.description).join(' ')).toLowerCase().includes(q)));list=await verifiedProviders(list);html+=`<h2>${icon(selectedCategory)} ${esc(selectedCategory)}</h2><button class="link" onclick="selectedCategory=null;render()">‹ Voltar</button>`;html+=list.length?list.map(providerCard).join(''):card('<p class="sub">Ainda não há profissionais verificados correspondentes à busca.</p>');return html}
-             let matches=providers.filter(p=>p.available&&(!q||(p.name+' '+(p.area||'')+' '+p.category+' '+services.filter(s=>s.provider_id===p.id&&s.available===true).map(s=>s.title+' '+s.category+' '+s.description).join(' ')).toLowerCase().includes(q)));
-             if(q){matches=await verifiedProviders(matches);html+='<h2>Resultados da busca</h2>';html+=matches.length?matches.map(providerCard).join(''):card('<p class="sub">Nenhum profissional verificado encontrado.</p>')}else html+=card('<p class="sub">Selecione uma categoria para visualizar profissionais.</p>');
+             const q=(window.searchQuery||'').trim();
+             const cats=[...new Set([...BASE_CATEGORIES,...providers.map(p=>p.category).filter(Boolean),...services.filter(s=>s.available===true).map(s=>s.category).filter(Boolean)])];
+             let html=`<h1>Encontre profissionais</h1><p class="sub">Escolha uma categoria e encontre profissionais em Joinville e região.</p><input id="providerSearch" placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="searchAndRender(this)">`;
+             if(providersLoadError||servicesLoadError){
+              html+=notice('Não foi possível carregar todos os cadastros. '+[providersLoadError,servicesLoadError].filter(Boolean).join(' · '),'error');
+             }
+             html+=`<div class="category-list">${cats.filter(c=>!q||normalizeCategory(c).includes(normalizeCategory(q))||providers.some(p=>providerMatchesCategory(p,c)&&providerMatchesSearch(p,q))).map(c=>`<button class="category-item" onclick="openCategory(${arg(c)})"><span class="category-icon">${icon(c)}</span>${esc(c)}<span class="category-arrow">›</span></button>`).join('')}</div>`;
+             if(selected){
+              const p=providers.find(x=>x.id===selected);
+              if(p&&p.available===true)return html+await providerDetail(p);
+              selected=null;selectedServiceId=null;
+             }
+             if(selectedCategory){
+              let list=providers.filter(p=>p.available===true&&providerMatchesCategory(p,selectedCategory)&&providerMatchesSearch(p,q));
+              list=await verifiedProviders(list);
+              html+=`<h2>${icon(selectedCategory)} ${esc(selectedCategory)}</h2><button class="link" onclick="selectedCategory=null;render()">‹ Voltar</button>`;
+              html+=list.length?list.map(providerCard).join(''):card('<p class="sub">Não encontramos profissionais verificados nesta categoria. Confira se há profissionais cadastrados, disponíveis e com verificação aprovada no Chamaê.</p>');
+              return html;
+             }
+             const matches=providers.filter(p=>p.available===true&&providerMatchesSearch(p,q));
+             if(q){
+              const verified=await verifiedProviders(matches);
+              html+='<h2>Resultados da busca</h2>';
+              html+=verified.length?verified.map(providerCard).join(''):card('<p class="sub">Nenhum profissional verificado encontrado para essa busca.</p>');
+             }else{
+              html+=card('<p class="sub">Selecione uma categoria para visualizar os profissionais correspondentes.</p>');
+             }
              return html;
             }
             function searchAndRender(input){window.searchQuery=input.value;const start=input.selectionStart,end=input.selectionEnd;clearTimeout(searchRenderTimer);searchRenderTimer=setTimeout(async()=>{await render();const next=$('providerSearch');if(next){next.focus({preventScroll:true});try{next.setSelectionRange(start,end)}catch(_){}}},180)}
