@@ -1,159 +1,650 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#124B91">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Chamaê">
-<title>Chamaê — MVP conectado</title>
-<style>
-:root{--blue:#124B91;--orange:#F07822;--bg:#F4F7FB;--muted:#65758B;--line:#E3EAF2;--green:#168653;--red:#B42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172B45}
-header{background:#fff;padding:13px 17px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:4;box-shadow:0 1px 5px #0001}
-.logo{font-size:27px;font-weight:950;color:var(--blue);letter-spacing:-1px}.logo span{color:var(--orange)}.city{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--muted)}
-main{padding:17px 15px 110px;max-width:720px;margin:auto}h1{font-size:24px;margin:8px 0 4px;font-weight:900}h2{font-size:17px;margin:20px 0 8px}
-.sub{font-size:13px;color:var(--muted);line-height:1.5;margin:5px 0 12px}
-input,select,textarea{width:100%;padding:13px;border:1px solid #DCE4EF;border-radius:12px;font-size:16px;background:white;margin:7px 0;color:#172B45}
-textarea{min-height:78px}.card{background:white;border:1px solid var(--line);border-radius:17px;padding:15px;margin:12px 0}
-.row{display:flex;align-items:center;gap:12px}.avatar{width:48px;height:48px;border-radius:50%;background:#E7F0FF;color:var(--blue);display:grid;place-items:center;font-size:21px;font-weight:900;flex-shrink:0}
-.name{font-weight:850}.rating{font-size:12px;color:#A66A10;margin-top:6px}.price{font-weight:900;color:var(--blue);margin-top:8px}
-.between{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
-button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}input,select,textarea{touch-action:manipulation}.action{width:100%;border:0;border-radius:12px;padding:13px;background:var(--blue);color:white;font-weight:850;margin-top:9px}
-.secondary{background:#EAF1FA;color:var(--blue)}.orange{background:var(--orange);color:white}.danger{background:#FEECEB;color:var(--red)}
-.link{border:0;background:none;color:var(--orange);font-weight:800;padding:8px 2px}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 2px calc(9px + env(safe-area-inset-bottom));z-index:5;overflow-x:auto}
-nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weight:850;padding:7px 5px;white-space:nowrap}nav button.active{color:var(--blue)}
-.small{font-size:10px;color:#8794A5;text-align:center;background:white;padding:5px 0 8px}
-.tag{display:inline-block;border-radius:20px;background:#EDF4FF;color:var(--blue);padding:5px 9px;font-size:11px;font-weight:800}
-.verified{display:inline-flex;align-items:center;gap:4px;border-radius:20px;background:#E7F7EE;color:#137547;padding:5px 9px;font-size:11px;font-weight:850}
-.chat{background:#EAF1FA;border-radius:12px;padding:11px;margin:8px 0;max-width:90%;overflow-wrap:anywhere}.chat.mine{margin-left:auto;background:#E7F7EE}
-.notice{padding:11px;border-radius:12px;background:#FFF6E8;color:#84500B;font-size:12px;line-height:1.45;margin:12px 0}
-.error{color:#B42318;background:#FEF3F2;padding:10px;border-radius:10px;font-size:13px}.option{display:block;width:100%;text-align:left;background:white;border:1px solid #E1E7EF;border-radius:12px;padding:13px;margin:8px 0}
-.option.selected{border:2px solid var(--blue);background:#EDF4FF}.service-row{border-top:1px solid var(--line);padding:11px 0}
-.category-list{display:flex;flex-direction:column;gap:9px;margin:14px 0 20px}
-.category-item{width:100%;display:flex;align-items:center;gap:15px;padding:13px 15px;background:#fff;border:1px solid #DCE5F1;border-radius:13px;color:#172B45;text-align:left;font-weight:850}
-.category-icon{width:42px;font-size:27px;text-align:center}.category-arrow{margin-left:auto;color:var(--blue);font-size:22px}
-.category-item.selected{border:2px solid var(--blue);background:#EDF4FF}
-@media(min-width:900px){main{max-width:1080px;padding:28px 28px 110px}nav{justify-content:center;gap:30px}nav button{font-size:13px;padding:10px 14px}.card{padding:20px}}
-</style>
-</head>
-<body>
-<header><div class="logo">chama<span>ê</span></div><div class="city">JOINVILLE • SC</div></header>
-<main id="app"><p>Carregando Chamaê...</p></main>
-<nav>
-<button data-tab="home" class="active">Início</button><button data-tab="orders">Serviços</button><button data-tab="favorites">Favoritos</button><button data-tab="chat">Chat</button><button data-tab="provider">Área profissional</button><button data-tab="profile">Perfil</button>
-</nav>
-<div class="small">Chamaê • versão de validação</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-'use strict';
-const SUPABASE_URL='https://rteeynlktogwjbjxezwr.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_p1JjWeb5D4l-TIGIKK5e8w_5z5j4_V6';
-if(!window.supabase?.createClient){document.getElementById('app').innerHTML='<div class=\"error\">Não foi possível carregar a conexão do Chamaê. Verifique sua internet e recarregue a página.</div>';throw new Error('Biblioteca Supabase não carregou.')}
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const $=id=>document.getElementById(id);
-const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-let session=null,user=null,profile=null,tab='home',selected=null,selectedServiceId=null,selectedCategory=null,selectedProviderId=null,activeBooking=null;
-let providers=[],services=[],bookings=[],messages=[],notifications=[],ratedBookingIds=[],loyaltyBonuses=[],loyaltyProgress={};
-let favorites=[];try{favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}
-let chatRealtime=null,bookingRealtime=null,notificationRealtime=null;
-let renderVersion=0;
-let searchRenderTimer=null;
-const BASE_CATEGORIES=['Diarista','Manicure','Eletricista','Encanador','Babá','Cuidador de idosos','Personal trainer','Professor de música','Professor de idiomas','Pedreiro','Jardineiro','Serviços gerais','Multi serviços','Pintor','Mecânico','Marceneiro','Fotógrafo','Professor particular','Cuidador de pets'];
-function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function validCPF(value){let c=String(value||'').replace(/\D/g,'');if(c.length!==11||/^(\d)\1{10}$/.test(c))return false;let calc=(base,factor)=>{let sum=0;for(let n of base)sum+=Number(n)*factor--;let r=(sum*10)%11;return r===10?0:r};return calc(c.slice(0,9),10)===Number(c[9])&&calc(c.slice(0,10),11)===Number(c[10])}
-function arg(s=''){return JSON.stringify(String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;')}
-function card(s){return `<section class="card">${s}</section>`}
-function btn(t,fn,k=''){return `<button class="action ${k}" onclick="${fn}">${t}</button>`}
-function notice(s,k='notice'){return `<div class="${k}">${esc(s)}</div>`}
-function dateToday(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function icon(c=''){c=String(c).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();if(/diarist|limpeza|faxin/.test(c))return'🧹';if(/manicur|unha/.test(c))return'💅';if(/eletric/.test(c))return'⚡';if(/encan|hidraul/.test(c))return'🔧';if(/bab|cuidador/.test(c))return'🧸';if(/jardina/.test(c))return'🌿';if(/pintor/.test(c))return'🖌️';if(/pedreir|reforma/.test(c))return'🧱';if(/pet|animal/.test(c))return'🐾';if(/mecan|autom/.test(c))return'🚗';if(/personal/.test(c))return'🏋️';if(/professor|aula/.test(c))return'📚';return'🧰'}
-async function clearChannel(ch){if(ch)try{await db.removeChannel(ch)}catch(e){console.warn('Falha ao encerrar canal realtime:',e)}}
-async function clearRealtime(){await Promise.all([clearChannel(chatRealtime),clearChannel(bookingRealtime),clearChannel(notificationRealtime)]);chatRealtime=bookingRealtime=notificationRealtime=null}
-async function loadProfile(){if(!user)return;let{data,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();if(error)throw error;profile=data}
-async function ensureProfile(full='',phone='',role=null){
- if(!user)return;
- // Perfil existente nunca tem sua função sobrescrita pelo navegador.
- if(profile)return profile;
- let meta=user.user_metadata||{},safe=role||meta.role||'cliente';
- if(!['cliente','prestador'].includes(safe))safe='cliente';
- let payload={id:user.id,full_name:full||meta.full_name||user.email?.split('@')[0]||'Usuário',phone:phone||meta.phone||null,role:safe};
- let{data,error}=await db.from('profiles').insert(payload).select().single();
- if(error)throw error;profile=data;return profile;
-}
-async function loadProviders(){let{data,error}=await db.from('providers').select('id,user_id,name,category,area,rating,half_day_price,full_day_price,about,available').order('created_at',{ascending:false});if(error){console.warn(error);providers=[]}else providers=data||[]}
-async function loadServices(){let{data,error}=await db.from('services').select('*').order('created_at',{ascending:false});if(error){console.warn(error);services=[]}else services=data||[]}
-async function loadBookings(){if(!user)return;let{data,error}=await db.from('bookings').select('*').order('created_at',{ascending:false});if(error){console.warn(error);bookings=[]}else bookings=data||[]}
-async function loadNotifications(){if(!user)return;let{data,error}=await db.from('notifications').select('*').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(30);if(error){console.warn(error);notifications=[]}else notifications=data||[]}
-async function loadRated(){ratedBookingIds=[];let ids=bookings.filter(b=>b.client_id===user?.id&&b.status==='completed').map(b=>b.id);if(!ids.length)return;let{data,error}=await db.from('ratings').select('booking_id').in('booking_id',ids);if(!error)ratedBookingIds=(data||[]).map(x=>x.booking_id)}
-async function loadLoyalty(){loyaltyBonuses=[];loyaltyProgress={};if(!user||profile?.role!=='prestador')return;let ids=providers.filter(p=>p.user_id===user.id).map(p=>p.id);if(!ids.length)return;let{data,error}=await db.from('provider_loyalty_bonuses').select('*').in('provider_id',ids).order('created_at',{ascending:false});if(error){console.warn(error);return}loyaltyBonuses=data||[];let{data:r,error:re}=await db.from('ratings').select('booking_id,provider_id').in('provider_id',ids).eq('score',5);if(re)return;let bookingIds=[...new Set((r||[]).map(x=>x.booking_id))],completed=[];if(bookingIds.length){let q=await db.from('bookings').select('id,provider_id').in('id',bookingIds).eq('status','completed');completed=q.data||[]}for(let id of ids){let n=completed.filter(b=>b.provider_id===id).length;loyaltyProgress[id]={total:n,completed:n%10,remaining:10-n%10}}}
-function loyaltyView(ids){let rows=loyaltyBonuses.filter(x=>ids.includes(x.provider_id)),total=rows.reduce((a,x)=>a+Number(x.bonus_amount||0),0);return card(`<h2>Programa de fidelidade</h2><p class="sub">A cada 10 serviços concluídos com avaliação de 5 estrelas, bônus de 10% sobre o valor-base do décimo serviço do ciclo.</p>${ids.map(id=>{let p=providers.find(x=>x.id===id),d=loyaltyProgress[id]||{total:0,completed:0,remaining:10};return `<div class="service-row"><b>${esc(p?.name||'Profissional')}</b><p class="sub">${d.completed}/10 avaliações qualificadas · faltam ${d.remaining}</p><div style="height:9px;background:#e3eaf2;border-radius:10px"><div style="height:9px;width:${d.completed*10}%;background:#168653;border-radius:10px"></div></div></div>`}).join('')}<div class="between"><span class="sub">Bônus registrados</span><b class="price">${money(total)}</b></div>${rows.map(x=>`<p class="sub">Ciclo ${x.milestone_number}: ${money(x.bonus_amount)} · ${esc(x.status)}</p>`).join('')||'<p class="sub">Nenhum bônus registrado.</p>'}`)}
-async function isVerified(id){let{data,error}=await db.from('provider_verifications').select('status').eq('provider_id',id).eq('status','verified').maybeSingle();return!error&&data?.status==='verified'}
-let pendingSignupToken=null;
-function authView(){return `<h1>Bem-vindo ao Chamaê</h1><p class="sub">Entre ou crie sua conta para contratar serviços ou oferecer seu trabalho.</p>${pendingSignupToken?card(`<h2>Confirme seu cadastro</h2><p class="sub">Seu link exclusivo foi criado. Toque abaixo para confirmar sua conta neste aplicativo. O link expira em 15 minutos e só pode ser usado uma vez.</p><a class="action orange" style="display:block;text-align:center;text-decoration:none" href="${esc(window.location.origin+window.location.pathname+'?confirm='+encodeURIComponent(pendingSignupToken))}">Confirmar cadastro</a><button class="action secondary" onclick="copySignupLink()">Copiar link de confirmação</button>`):''}${card(`<h2>Entrar</h2><input id="loginEmail" type="email" placeholder="Seu e-mail"><input id="loginPass" type="password" placeholder="Sua senha">${btn('Entrar','login()')}<hr><h2>Criar conta</h2><input id="newName" placeholder="Nome completo"><input id="newPhone" placeholder="Telefone / WhatsApp"><input id="newEmail" type="email" placeholder="E-mail"><input id="newPass" type="password" minlength="6" placeholder="Senha (mínimo 6 caracteres)"><select id="newRole"><option value="cliente">Quero contratar serviços</option><option value="prestador">Quero oferecer serviços</option></select>${btn('Criar minha conta','signup()','orange')}<p class="sub">A confirmação será feita por um link exibido aqui no próprio aplicativo. Não enviamos mensagem.</p>`)}`}
-async function copySignupLink(){if(!pendingSignupToken)return;let link=window.location.origin+window.location.pathname+'?confirm='+encodeURIComponent(pendingSignupToken);try{await navigator.clipboard.writeText(link);alert('Link copiado. Abra-o neste mesmo navegador para confirmar.')}catch(e){alert(link)}}
-async function createSignupLink(){let{data,error}=await db.rpc('chamae_create_signup_link');if(error)throw error;pendingSignupToken=data;await render()}
-async function consumeSignupLink(token){let{data,error}=await db.rpc('chamae_consume_signup_link',{p_token:token});if(error)throw error;if(data!==true)throw new Error('Link inválido, expirado ou já utilizado.');let{error:updateError}=await db.from('profiles').update({signup_confirmed_at:new Date().toISOString()}).eq('id',user.id);if(updateError)throw updateError;history.replaceState({},'',window.location.pathname);pendingSignupToken=null;await loadProfile();await refreshUserData();tab='home';await render();alert('Cadastro confirmado com sucesso!')}
-async function login(){let email=$('loginEmail').value.trim(),password=$('loginPass').value;if(!email||!password)return alert('Informe e-mail e senha.');let{data,error}=await db.auth.signInWithPassword({email,password});if(error)return alert(error.message);session=data.session;user=data.user;try{await loadProfile();if(!profile)await ensureProfile();if(!profile?.signup_confirmed_at){await createSignupLink();return alert('Sua conta ainda precisa ser confirmada pelo link exibido no aplicativo.')}await refreshUserData();tab='home';await render()}catch(e){alert(e.message)}}
-async function signup(){let full=$('newName').value.trim(),phone=$('newPhone').value.trim(),email=$('newEmail').value.trim(),password=$('newPass').value,role=$('newRole').value;if(!full||!email||password.length<6)return alert('Preencha nome, e-mail e senha com pelo menos 6 caracteres.');let{data,error}=await db.auth.signUp({email,password,options:{data:{full_name:full,phone,role}}});if(error)return alert(error.message);if(!data.session||!data.user){alert('O Supabase não iniciou a sessão. É necessário desativar a confirmação de e-mail nas configurações de autenticação antes de testar este fluxo.');return}user=data.user;session=data.session;try{await ensureProfile(full,phone,role);let{error:resetError}=await db.from('profiles').update({signup_confirmed_at:null}).eq('id',user.id);if(resetError)throw resetError;await createSignupLink();alert('Conta criada. Agora toque em “Confirmar cadastro” para ativá-la.')}catch(e){alert('Conta criada, mas não foi possível gerar o link: '+e.message)}}
-async function refreshUserData(){await loadProviders();await loadServices();await loadBookings();await loadNotifications();await loadRated();await loadLoyalty();await subscribeBookings();await subscribeNotifications()}
-async function logout(){await clearRealtime();await db.auth.signOut();user=session=profile=null;providers=services=bookings=messages=notifications=[];tab='home';selected=selectedServiceId=selectedCategory=activeBooking=null;await render()}
-function providerCard(p){let count=services.filter(s=>s.provider_id===p.id).length;return card(`<div class="row"><div class="avatar">${icon(p.category)}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${p._verified?'<span class="verified">✓ Perfil Verificado</span>':''}</div></div><div class="between"><span class="price">${count} serviço(s)</span><button class="link" onclick="toggleFavorite(${arg(p.id)})">${favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}</button><button class="link" onclick="selectProvider(${arg(p.id)})">Ver serviços ›</button></div>`)}
-async function home(){
- if(!user)return authView();
- let q=(window.searchQuery||'').toLowerCase().trim();
- let cats=[...new Set([...BASE_CATEGORIES,...providers.map(p=>p.category).filter(Boolean)])];
- let html=`<h1>Encontre profissionais</h1><p class="sub">Escolha uma categoria e encontre profissionais em Joinville e região.</p><input id="providerSearch" placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="searchAndRender(this)"><div class="category-list">${cats.filter(c=>!q||c.toLowerCase().includes(q)||providers.some(p=>p.category?.toLowerCase()===c.toLowerCase()&&(p.name+' '+(p.area||'')).toLowerCase().includes(q))).map(c=>`<button class="category-item" onclick="openCategory(${arg(c)})"><span class="category-icon">${icon(c)}</span>${esc(c)}<span class="category-arrow">›</span></button>`).join('')}</div>`;
- if(selected){let p=providers.find(x=>x.id===selected);if(p)return html+await providerDetail(p)}
- if(selectedCategory){let list=providers.filter(p=>p.available&&p.category?.toLowerCase()===selectedCategory.toLowerCase()&&(!q||(p.name+' '+(p.area||'')+' '+p.category+' '+services.filter(s=>s.provider_id===p.id).map(s=>s.title+' '+s.description).join(' ')).toLowerCase().includes(q)));
- html+=`<h2>${icon(selectedCategory)} ${esc(selectedCategory)}</h2><button class="link" onclick="selectedCategory=null;render()">‹ Voltar</button>`;
- html+=list.length?(await Promise.all(list.map(async p=>{p._verified=await isVerified(p.id);return providerCard(p)}))).join(''):card('<p class="sub">Ainda não há profissionais correspondentes à busca.</p>');return html;}
- let matches=providers.filter(p=>p.available&&(!q||(p.name+' '+(p.area||'')+' '+p.category+' '+services.filter(s=>s.provider_id===p.id).map(s=>s.title+' '+s.description).join(' ')).toLowerCase().includes(q)));
- if(q){html+=`<h2>Resultados da busca</h2>`;html+=matches.length?(await Promise.all(matches.map(async p=>{p._verified=await isVerified(p.id);return providerCard(p)}))).join(''):card('<p class="sub">Nenhum profissional encontrado.</p>');}
- else html+=card('<p class="sub">Selecione uma categoria para visualizar profissionais.</p>');
- return html;
-}
-function searchAndRender(input){window.searchQuery=input.value;const start=input.selectionStart,end=input.selectionEnd;clearTimeout(searchRenderTimer);searchRenderTimer=setTimeout(async()=>{await render();const next=$('providerSearch');if(next){next.focus({preventScroll:true});try{next.setSelectionRange(start,end)}catch(_){}}},180)}
-function openCategory(c){selectedCategory=c;selected=null;selectedServiceId=null;render()}
-function selectProvider(id){selected=id;selectedServiceId=null;render()}
-function selectService(pid,sid){selected=pid;selectedServiceId=sid;render()}
-async function providerDetail(p){let list=services.filter(s=>s.provider_id===p.id&&s.available),verified=await isVerified(p.id);return card(`<button class="link" onclick="selected=null;render()">‹ Voltar</button><div class="row"><div class="avatar">${icon(p.category)}</div><div><h1>${esc(p.name)}</h1><p class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</p><div class="rating">★ ${Number(p.rating||5).toFixed(1)}</div>${verified?'<span class="verified">✓ Perfil Verificado</span>':''}</div></div><p class="sub">${esc(p.about||'')}</p><h2>Serviços disponíveis</h2>${list.map(s=>{let opts=[['single','Serviço avulso',s.price],['half','Meia diária (4 horas)',s.half_day_price],['full','Diária completa (8 horas)',s.full_day_price]].filter(x=>Number(x[2])>0);return `<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.description||s.category||'')}</p><p class="sub">${opts.map(x=>x[1]+': '+money(x[2])).join(' · ')||'Preço não definido'}</p><button class="action" ${opts.length?'':'disabled'} onclick="selectService(${arg(p.id)},${arg(s.id)})">${selectedServiceId===s.id?'Selecionado':'Selecionar serviço'}</button></div>`}).join('')||'<p class="sub">Nenhum serviço disponível.</p>'}<h2>Solicitar contratação</h2><label class="sub">Modalidade</label><select id="bookingDuration"><option value="single">Serviço avulso</option><option value="half">Meia diária (4 horas)</option><option value="full">Diária completa (8 horas)</option></select><label class="sub">Data</label><input id="serviceDate" type="date" min="${dateToday()}"><label class="sub">Horário</label><input id="serviceTime" type="time"><textarea id="serviceNotes" placeholder="Observações"></textarea><p class="notice">A solicitação depende do aceite do profissional. Somente modalidades com preço cadastrado podem ser contratadas.</p>${btn('Solicitar serviço','createBooking()')}`)}
-function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];localStorage.setItem('chamae_favorites',JSON.stringify(favorites));render()}
-async function createBooking(){if(!user)return alert('Entre na sua conta.');let p=providers.find(x=>x.id===selected),s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p?.id&&x.available);if(!p||!s)return alert('Selecione um profissional e um serviço.');if(p.user_id===user.id)return alert('Você não pode contratar seu próprio serviço.');if(!await isVerified(p.id))return alert('Este profissional ainda não possui verificação aprovada.');let mode=$('bookingDuration').value,price=mode==='half'?s.half_day_price:mode==='full'?s.full_day_price:s.price;if(!Number.isFinite(Number(price))||Number(price)<=0)return alert('Esta modalidade não possui preço cadastrado.');let date=$('serviceDate').value,time=$('serviceTime').value,notes=$('serviceNotes').value.trim();if(!date||date<dateToday())return alert('Escolha uma data válida.');if(!time)return alert('Informe o horário.');let duration=mode==='half'?'half':mode==='full'?'full':'single';let{error}=await db.from('bookings').insert({client_id:user.id,provider_id:p.id,service_id:s.id,duration,service_date:date,service_time:time,notes,tip_amount:0});if(error)return alert('Não foi possível solicitar: '+error.message);selected=selectedServiceId=selectedCategory=null;tab='orders';await loadBookings();await loadNotifications();await render();alert('Solicitação enviada! O profissional receberá uma notificação.')}
-function statusLabel(s){return({pending:'Aguardando prestador',accepted:'Serviço aceito',rejected:'Solicitação recusada',in_progress:'Atendimento em andamento',completed:'Serviço concluído',cancelled:'Cancelado'})[s]||s}
-function timeline(b){return [['Solicitado',b.created_at],['Aceito',b.accepted_at],['Iniciado',b.started_at],['Concluído',b.completed_at],['Cancelado',b.cancelled_at],['Recusado',b.rejected_at]].filter(x=>x[1]).map(x=>`<div class="sub">• ${x[0]}: ${new Date(x[1]).toLocaleString('pt-BR')}</div>`).join('')}
-function bookingActions(b){let isP=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id),isC=b.client_id===user.id,h='';if(isP&&b.status==='pending')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'accepted')">Aceitar serviço</button><button class="action secondary" onclick="changeStatus(${arg(b.id)},'rejected')">Rejeitar serviço</button>`;if(isP&&b.status==='accepted')h+=`<button class="action orange" onclick="changeStatus(${arg(b.id)},'in_progress')">Iniciar atendimento</button>`;if(isP&&b.status==='in_progress')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'completed')">Concluir atendimento</button>`;if(isC&&['pending','accepted'].includes(b.status))h+=`<button class="action secondary" onclick="changeStatus(${arg(b.id)},'cancelled')">Cancelar solicitação</button>`;return h}
-async function changeStatus(id,status){if(!confirm('Confirmar esta alteração?'))return;let{data,error}=await db.from('bookings').update({status}).eq('id',id).select('id,status').maybeSingle();if(error)return alert(error.message);if(!data)return alert('Nenhuma alteração foi confirmada.');await loadBookings();await loadNotifications();await loadRated();render();alert('Status atualizado: '+statusLabel(data.status))}
-async function submitRating(id,pid){if(ratedBookingIds.includes(id))return alert('Este serviço já foi avaliado.');let score=Number($('rating-'+id).value),comment=$('comment-'+id).value.trim()||null;let{error}=await db.from('ratings').insert({booking_id:id,client_id:user.id,provider_id:pid,score,comment});if(error)return alert(error.message);await loadRated();await loadLoyalty();render();alert('Avaliação enviada. Obrigado!')}
-function notificationsView(){let unread=notifications.filter(n=>!n.read_at).length;return card(`<div class="between"><h2>Notificações</h2><span class="tag">${unread} não lida(s)</span></div>${notifications.map(n=>`<div class="service-row"><b>${esc(n.title)}</b><p class="sub">${esc(n.body)}</p>${!n.read_at?`<button class="link" onclick="markRead(${arg(n.id)})">Marcar como lida</button>`:''}</div>`).join('')||'<p class="sub">Nenhuma notificação.</p>'}`)}
-async function markRead(id){let{error}=await db.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id).eq('recipient_id',user.id);if(error)return alert(error.message);await loadNotifications();render()}
-function orders(){if(!user)return authView();return `<h1>Meus serviços</h1><p class="sub">Acompanhe solicitações, horários e avaliações.</p>${notificationsView()}${bookings.map(b=>card(`<div class="between"><b>${esc(b.service_category)} · ${esc(b.provider_name)}</b><span class="tag">${esc(statusLabel(b.status))}</span></div><p class="sub">${esc(b.duration)} · ${esc(b.service_date||'')} ${esc(String(b.service_time||'').slice(0,5))}</p><p class="sub">${esc(b.notes||'Sem observações.')}</p>${timeline(b)}<b class="price">${money(b.total_amount)}</b><button class="link" onclick="openChat(${arg(b.id)})">Abrir chat ›</button>${bookingActions(b)}${b.client_id===user.id&&b.status==='completed'&&!ratedBookingIds.includes(b.id)?`<label class="sub">Avalie este serviço</label><select id="rating-${b.id}"><option value="5">5 estrelas</option><option value="4">4 estrelas</option><option value="3">3 estrelas</option><option value="2">2 estrelas</option><option value="1">1 estrela</option></select><input id="comment-${b.id}" placeholder="Comentário (opcional)"><button class="action secondary" onclick="submitRating(${arg(b.id)},${arg(b.provider_id)})">Enviar avaliação</button>`:''}`)).join('')||card('<p class="sub">Você ainda não possui solicitações.</p>')}`}
-function favoritesPage(){if(!user)return authView();let list=providers.filter(p=>favorites.includes(p.id));return `<h1>Favoritos</h1><p class="sub">Salvos neste aparelho.</p>${list.map(p=>card(`<b>${esc(p.name)}</b><p class="sub">${esc(p.category)} · ${esc(p.area||'')}</p><button class="link" onclick="toggleFavorite(${arg(p.id)})">Remover</button><button class="link" onclick="selectProvider(${arg(p.id)});tab='home';render()">Ver perfil ›</button>`)).join('')||card('<p class="sub">Nenhum favorito.</p>')}`}
-async function openChat(id){activeBooking=id;tab='chat';await loadMessages();await render();subscribeChat()}
-async function loadMessages(){if(!activeBooking)return;let{data,error}=await db.from('messages').select('*').eq('booking_id',activeBooking).order('created_at');if(error){console.warn(error);messages=[]}else messages=data||[]}
-function chatView(){if(!user)return authView();let b=bookings.find(x=>x.id===activeBooking);return `<h1>Chat do serviço</h1><p class="sub">${b?esc(b.provider_name)+' · '+esc(b.service_category):'Selecione uma contratação.'}</p>${activeBooking?card(messages.map(m=>`<div class="chat ${m.sender_id===user.id?'mine':''}">${esc(m.body)}</div>`).join('')+`<input id="chatText" maxlength="2000" placeholder="Digite sua mensagem"><button class="action" onclick="sendMessage()">Enviar</button>`):card('<p class="sub">Abra o chat a partir de uma contratação.</p>')}`}
-async function sendMessage(){let body=$('chatText')?.value.trim();if(!body||!activeBooking)return;if(body.length>2000)return alert('Máximo de 2.000 caracteres.');let{error}=await db.from('messages').insert({booking_id:activeBooking,sender_id:user.id,body});if(error)return alert(error.message);await loadMessages();render()}
-async function subscribeChat(){await clearChannel(chatRealtime);chatRealtime=null;let id=activeBooking;if(!id)return;chatRealtime=db.channel('chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'booking_id=eq.'+id},async payload=>{if(activeBooking!==id||payload.new.sender_id===user.id)return;await loadMessages();if(tab==='chat')render()}).subscribe()}
-async function subscribeBookings(){await clearChannel(bookingRealtime);bookingRealtime=null;if(!user)return;bookingRealtime=db.channel('bookings-'+user.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings'},async()=>{await loadBookings();await loadRated();if(['orders','provider'].includes(tab))render()}).subscribe()}
-async function subscribeNotifications(){await clearChannel(notificationRealtime);notificationRealtime=null;if(!user)return;notificationRealtime=db.channel('notifications-'+user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'recipient_id=eq.'+user.id},async payload=>{await loadNotifications();if(tab==='orders')render();if(payload.new?.title)alert(payload.new.title+'\n'+(payload.new.body||''))}).subscribe()}
-function providerArea(){if(!user)return authView();if(profile?.role!=='prestador')return `<h1>Área profissional</h1>${card('<p class="sub">Sua conta está configurada como cliente. Use uma conta de prestador para publicar serviços.</p>')}`;let mine=providers.filter(p=>p.user_id===user.id),current=mine.find(p=>p.id===selectedProviderId)||mine[0]||null;if(current)selectedProviderId=current.id;let html=`<h1>Área profissional</h1><p class="sub">Cadastre vários profissionais e serviços ilimitados.</p>${loyaltyView(mine.map(p=>p.id))}${card(`<h2>Meus profissionais (${mine.length})</h2>${mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId=${arg(p.id)};render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join('')}<button class="action orange" onclick="newProviderForm()">+ Adicionar profissional</button>`)}`;if(current){let list=services.filter(s=>s.provider_id===current.id);html+=card(`<div class="between"><h2>${esc(current.name)}</h2><span class="tag">${current.available?'Ativo':'Inativo'}</span></div><p class="sub">${esc(current.category)} · ${esc(current.area||'')}</p><button class="link" onclick="editProviderForm(${arg(current.id)})">Editar perfil</button><button class="link" onclick="deleteProvider(${arg(current.id)})">Excluir perfil</button><h2>Serviços (${list.length})</h2>${list.map(s=>`<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.category)} · avulso ${money(s.price)} · 4h ${money(s.half_day_price)} · 8h ${money(s.full_day_price)}</p><button class="link" onclick="editServiceForm(${arg(s.id)})">Editar</button><button class="link" onclick="deleteService(${arg(s.id)})">Excluir</button></div>`).join('')}<button class="action" onclick="newServiceForm(${arg(current.id)})">+ Adicionar serviço</button><p class="notice">O selo Perfil Verificado é liberado automaticamente quando o banco confirma os dados obrigatórios, o CPF e a presença dos documentos enviados. Isso não comprova autenticidade documental ou identidade civil.</p>`)}html+=`<div id="providerEditor"></div><div id="serviceEditor"></div>`;return html}
-function providerForm(p=null){return card(`<h2>${p?'Editar profissional':'Novo profissional'}</h2><h3>Informações profissionais</h3><input id="provName" placeholder="Nome profissional" value="${esc(p?.name||profile?.full_name||'')}" required><input id="provCategory" list="cats" placeholder="Categoria principal" value="${esc(p?.category||'')}" required><datalist id="cats">${BASE_CATEGORIES.map(c=>`<option value="${esc(c)}">`).join('')}</datalist><input id="provArea" placeholder="Bairro/região" value="${esc(p?.area||'')}" required><textarea id="provAbout" placeholder="Experiência, especialidades e apresentação">${esc(p?.about||'')}</textarea><h3>Dados para verificação (privados)</h3><input id="docLegalName" placeholder="Nome completo conforme documento" autocomplete="name" required><input id="docCPF" inputmode="numeric" placeholder="CPF (somente números)" maxlength="14" required><input id="docBirth" type="date" aria-label="Data de nascimento" required><input id="docPhone" type="tel" placeholder="Telefone / WhatsApp" autocomplete="tel" required><input id="docAddress" placeholder="Endereço completo" autocomplete="street-address" required><input id="docExperience" placeholder="Tempo de experiência (ex.: 3 anos)"><label class="sub">Foto para análise interna (opcional — nunca aparece no perfil público)</label><input id="docPhoto" type="file" accept="image/jpeg,image/png,image/webp"><label class="sub">Documento de identidade — RG ou CNH</label><input id="docIdentity" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><label class="sub">Comprovante de endereço</label><input id="docAddressProof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><p class="notice">Na primeira solicitação, envie RG/CNH e comprovante. Ao editar, os documentos já enviados são mantidos se você não selecionar novos arquivos. A substituição de documentos executa novamente as validações automáticas. A foto, se enviada, fica privada e nunca é exibida no perfil público. O selo confirma apenas consistência cadastral e presença dos arquivos, não autenticidade documental.</p><h3>Preços de referência</h3><input id="provHalf" type="number" min="0" step=".01" placeholder="Preço referência meia diária" value="${p?.half_day_price??''}"><input id="provFull" type="number" min="0" step=".01" placeholder="Preço referência diária completa" value="${p?.full_day_price??''}"><button class="action" onclick="saveProvider(${arg(p?.id||'')})">Enviar cadastro para verificação</button><button class="action secondary" onclick="render()">Cancelar</button>`)}
-function newProviderForm(){let el=$('providerEditor');if(el){el.innerHTML=providerForm();el.scrollIntoView({behavior:'smooth'})}}
-async function editProviderForm(id){let p=providers.find(x=>x.id===id),el=$('providerEditor');if(!p||!el)return;el.innerHTML=providerForm(p);let{data,error}=await db.from('provider_documents').select('legal_name,cpf,birth_date,phone,address,experience').eq('provider_id',id).maybeSingle();if(error){console.warn('Não foi possível carregar dados documentais:',error);return}if(data){for(let [field,value] of Object.entries({docLegalName:data.legal_name,docCPF:data.cpf,docBirth:data.birth_date,docPhone:data.phone,docAddress:data.address,docExperience:data.experience})){let input=$(field);if(input)input.value=value||''}}}
-async function saveProvider(id=''){try{if(!user)throw new Error('Entre na sua conta novamente.');let val=x=>$(x)?.value?.trim()||'',file=x=>$(x)?.files?.[0]||null;let half=val('provHalf'),full=val('provFull'),payload={user_id:user.id,name:val('provName'),category:val('provCategory'),area:val('provArea'),half_day_price:half?Number(half):null,full_day_price:full?Number(full):null,about:val('provAbout'),available:id?(providers.find(x=>x.id===id)?.available??false):false};let cpf=val('docCPF').replace(/\D/g,'');if(!payload.name||!payload.category||!payload.area)return alert('Preencha nome profissional, categoria e bairro.');if(!val('docLegalName')||!validCPF(cpf)||!val('docBirth')||!val('docPhone')||!val('docAddress'))return alert('Preencha todos os dados e informe um CPF válido.');if([payload.half_day_price,payload.full_day_price].some(x=>x!==null&&(!Number.isFinite(x)||x<=0)))return alert('Preços devem ser maiores que zero.');let existing=null;if(id){let q=await db.from('provider_documents').select('*').eq('provider_id',id).maybeSingle();if(q.error)throw q.error;existing=q.data}if(!existing&&(!file('docIdentity')||!file('docAddressProof')))return alert('No primeiro cadastro, anexe RG/CNH e comprovante de endereço.');const validFile=f=>{if(!f)return;if(f.size>8*1024*1024)throw new Error('Cada arquivo deve ter no máximo 8 MB.');if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))throw new Error('Use JPG, PNG, WEBP ou PDF.')};[file('docIdentity'),file('docAddressProof'),file('docPhoto')].forEach(validFile);let result=id?await db.from('providers').update(payload).eq('id',id).eq('user_id',user.id).select('id').single():await db.from('providers').insert(payload).select('id').single();if(result.error)throw result.error;let pid=result.data.id;const upload=async(f,kind)=>{if(!f)return null;let ext=({ 'image/jpeg':'jpg','image/png':'png','image/webp':'webp','application/pdf':'pdf'})[f.type];let path=`${user.id}/${pid}/${kind}-${crypto.randomUUID()}.${ext}`;let{error}=await db.storage.from('provider-documents').upload(path,f,{upsert:false,contentType:f.type});if(error)throw error;return path};let identityPath=await upload(file('docIdentity'),'identity')||existing?.identity_path;let addressPath=await upload(file('docAddressProof'),'address')||existing?.address_proof_path;let photoPath=await upload(file('docPhoto'),'photo')||existing?.photo_path;if(!identityPath||!addressPath)throw new Error('Documentos obrigatórios ausentes.');let personalDataChanged=!!existing&&(['legal_name','birth_date','phone','address','experience'].some((k)=>String(existing[k]??'')!==String(({legal_name:val('docLegalName'),birth_date:val('docBirth'),phone:val('docPhone'),address:val('docAddress'),experience:val('docExperience')||null})[k]??''))||String(existing.cpf||'').replace(/\D/g,'')!==cpf);let changed=!!(file('docIdentity')||file('docAddressProof')||personalDataChanged);let docPayload={provider_id:pid,user_id:user.id,legal_name:val('docLegalName'),cpf:cpf,birth_date:val('docBirth'),phone:val('docPhone'),address:val('docAddress'),experience:val('docExperience')||null,identity_path:identityPath,address_proof_path:addressPath,photo_path:photoPath,...(existing?{}:{status:'pending'}),...(changed?{status:'pending',submitted_at:new Date().toISOString()}: {})};let{error:docError}=await db.from('provider_documents').upsert(docPayload,{onConflict:'provider_id'});if(docError)throw docError;if(changed||!existing){let{error:offError}=await db.from('providers').update({available:false}).eq('id',pid).eq('user_id',user.id);if(offError)throw offError}await loadProviders();selectedProviderId=pid;await render();alert('Cadastro salvo. O Supabase validará automaticamente os dados e os arquivos. Se todos os critérios forem atendidos, o perfil será marcado como Perfil Verificado e ficará disponível.')}catch(e){console.error(e);alert('Não foi possível concluir o cadastro: '+(e.message||e)+'\nConfira a configuração SQL e o bucket privado no Supabase.')}}
-async function deleteProvider(id){if(!confirm('Excluir este perfil profissional?'))return;let{error}=await db.from('providers').delete().eq('id',id).eq('user_id',user.id);if(error)return alert(error.message);await loadProviders();await loadServices();await render()}
-function serviceForm(pid,s=null){return card(`<h2>${s?'Editar serviço':'Novo serviço'}</h2><input id="svcTitle" placeholder="Nome do serviço" value="${esc(s?.title||'')}"><input id="svcCat" placeholder="Categoria/especialidade" value="${esc(s?.category||'')}"><textarea id="svcDesc" placeholder="Descrição">${esc(s?.description||'')}</textarea><input id="svcPrice" type="number" min="0" step=".01" placeholder="Preço avulso" value="${s?.price??''}"><input id="svcHalf" type="number" min="0" step=".01" placeholder="Meia diária (4h)" value="${s?.half_day_price??''}"><input id="svcFull" type="number" min="0" step=".01" placeholder="Diária completa (8h)" value="${s?.full_day_price??''}"><button class="action" onclick="saveService(${arg(pid)},${arg(s?.id||'')})">Salvar serviço</button><button class="action secondary" onclick="render()">Cancelar</button>`)}
-function newServiceForm(pid){let el=$('serviceEditor');if(el){el.innerHTML=serviceForm(pid);el.scrollIntoView({behavior:'smooth'})}}
-function editServiceForm(id){let s=services.find(x=>x.id===id),el=$('serviceEditor');if(s&&el)el.innerHTML=serviceForm(s.provider_id,s)}
-async function saveService(pid,id=''){let v=x=>$(x).value.trim(),a=v('svcPrice'),h=v('svcHalf'),f=v('svcFull'),payload={provider_id:pid,title:v('svcTitle'),category:v('svcCat'),description:v('svcDesc'),price:a?Number(a):null,half_day_price:h?Number(h):null,full_day_price:f?Number(f):null,available:true};if(!payload.title||!payload.category)return alert('Informe nome e categoria.');if([payload.price,payload.half_day_price,payload.full_day_price].some(x=>x!==null&&(!Number.isFinite(x)||x<=0)))return alert('Preços devem ser maiores que zero.');if(!payload.price&&!payload.half_day_price&&!payload.full_day_price)return alert('Informe pelo menos um preço.');let q=id?db.from('services').update(payload).eq('id',id):db.from('services').insert(payload),{error}=await q;if(error)return alert(error.message);await loadServices();await render();alert('Serviço salvo!')}
-async function deleteService(id){if(!confirm('Excluir este serviço?'))return;let{error}=await db.from('services').delete().eq('id',id);if(error)return alert(error.message);await loadServices();render()}
-function profileView(){if(!user)return authView();return `<h1>Perfil</h1>${card(`<b>${esc(profile?.full_name||user.email)}</b><p class="sub">${esc(user.email)}</p><p class="sub">${esc(profile?.phone||'Telefone não informado')}</p><p class="sub">Tipo de conta: ${esc(profile?.role||'não definido')}</p>${btn('Sair da conta','logout()','secondary')}`)}<p class="notice">Favoritos ficam salvos neste aparelho. Verificação documental depende de revisão administrativa.</p>`}
-async function render(){const version=++renderVersion;const currentTab=tab;let views={home,orders,favorites:favoritesPage,chat:chatView,provider:providerArea,profile:profileView};let result=await (views[currentTab]||home)();if(version!==renderVersion||currentTab!==tab)return;$('app').innerHTML=result;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab))}
-document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',async()=>{tab=b.dataset.tab;if(tab==='chat'&&!activeBooking)activeBooking=bookings[0]?.id||null;if(tab==='chat'&&activeBooking){await loadMessages();await render();await subscribeChat()}else await render()}));
-db.auth.onAuthStateChange((_e,s)=>{setTimeout(async()=>{session=s;user=s?.user||null;if(user){try{await loadProfile();if(!profile)await ensureProfile();await refreshUserData()}catch(e){console.error(e)}}else{await clearRealtime();profile=null;providers=services=bookings=messages=notifications=[];activeBooking=null}await render()},0)});
-async function init(){let{data,error}=await db.auth.getSession();if(error)console.warn(error);session=data.session;user=session?.user||null;if(user){await loadProfile();let token=new URLSearchParams(location.search).get('confirm');if(token){try{await consumeSignupLink(token);return}catch(e){history.replaceState({},'',location.pathname);await render();alert(e.message);return}}if(!profile?.signup_confirmed_at){await createSignupLink();return}await refreshUserData()}else{await loadProviders();await loadServices()}await render()}
-init().catch(e=>{$('app').innerHTML=notice('Erro ao iniciar o Chamaê: '+e.message,'error')});
-</script>
-</body>
-</html>
+    <!doctype html>
+            <html lang="pt-BR">
+            <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+            <meta name="theme-color" content="#124B91">
+            <meta name="apple-mobile-web-app-capable" content="yes">
+            <meta name="apple-mobile-web-app-title" content="Chamaê">
+            <title>Chamaê — MVP conectado</title>
+            <style>
+            :root{--blue:#124B91;--orange:#F07822;--bg:#F4F7FB;--muted:#65758B;--line:#E3EAF2;--green:#168653;--red:#B42318}
+            *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172B45}
+            header{background:#fff;padding:13px 17px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:4;box-shadow:0 1px 5px #0001}
+            .logo{font-size:27px;font-weight:950;color:var(--blue);letter-spacing:-1px}.logo span{color:var(--orange)}.city{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--muted)}
+            main{padding:17px 15px 36px;max-width:720px;margin:auto}h1{font-size:24px;margin:8px 0 4px;font-weight:900}h2{font-size:17px;margin:20px 0 8px}
+            .sub{font-size:13px;color:var(--muted);line-height:1.5;margin:5px 0 12px}
+            input,select,textarea{width:100%;padding:13px;border:1px solid #DCE4EF;border-radius:12px;font-size:16px;background:white;margin:7px 0;color:#172B45}
+            textarea{min-height:78px}.card{background:white;border:1px solid var(--line);border-radius:17px;padding:15px;margin:12px 0}
+            .row{display:flex;align-items:center;gap:12px}.avatar{width:48px;height:48px;border-radius:50%;background:#E7F0FF;color:var(--blue);display:grid;place-items:center;font-size:21px;font-weight:900;flex-shrink:0}
+            .name{font-weight:850}.rating{font-size:12px;color:#A66A10;margin-top:6px}.price{font-weight:900;color:var(--blue);margin-top:8px}
+            .between{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+            button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}input,select,textarea{touch-action:manipulation}.action{width:100%;border:0;border-radius:12px;padding:13px;background:var(--blue);color:white;font-weight:850;margin-top:9px}
+            .secondary{background:#EAF1FA;color:var(--blue)}.orange{background:var(--orange);color:white}.danger{background:#FEECEB;color:var(--red)}
+            .link{border:0;background:none;color:var(--orange);font-weight:800;padding:8px 2px}
+            nav{position:sticky;top:53px;left:0;right:0;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;justify-content:flex-start;gap:5px;padding:7px 9px;z-index:5;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;box-shadow:0 5px 14px #172b4510}
+            nav::-webkit-scrollbar{display:none}
+            nav button{border:1px solid transparent;background:transparent;color:var(--muted);font-size:10px;font-weight:850;padding:6px 10px;white-space:nowrap;flex:0 0 auto;min-width:66px;min-height:54px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+            nav button .nav-icon{font-size:21px;line-height:1.1;filter:drop-shadow(0 2px 2px #172b4520)}
+            nav button.active{color:var(--blue);background:linear-gradient(145deg,#EDF4FF,#fff);border-color:#C9DAF2;box-shadow:0 3px 9px #124b9118;transform:translateY(-1px)}
+            nav button.active .nav-icon{transform:scale(1.08)}
+            button:disabled{opacity:.48;cursor:not-allowed}
+            .small{font-size:10px;color:#8794A5;text-align:center;background:white;padding:5px 0 8px}
+            .tag{display:inline-block;border-radius:20px;background:#EDF4FF;color:var(--blue);padding:5px 9px;font-size:11px;font-weight:800}
+            .verified{display:inline-flex;align-items:center;gap:4px;border-radius:20px;background:#E7F7EE;color:#137547;padding:5px 9px;font-size:11px;font-weight:850}
+            .chat{background:#EAF1FA;border-radius:12px;padding:11px;margin:8px 0;max-width:90%;overflow-wrap:anywhere}.chat.mine{margin-left:auto;background:#E7F7EE}
+            .notice{padding:11px;border-radius:12px;background:#FFF6E8;color:#84500B;font-size:12px;line-height:1.45;margin:12px 0}
+            .error{color:#B42318;background:#FEF3F2;padding:10px;border-radius:10px;font-size:13px}.option{display:block;width:100%;text-align:left;background:white;border:1px solid #E1E7EF;border-radius:12px;padding:13px;margin:8px 0}
+            .option.selected{border:2px solid var(--blue);background:#EDF4FF}.service-row{border-top:1px solid var(--line);padding:11px 0}
+            .category-list{display:flex;flex-direction:column;gap:9px;margin:14px 0 20px}
+            .category-item{width:100%;display:flex;align-items:center;gap:15px;padding:13px 15px;background:#fff;border:1px solid #DCE5F1;border-radius:13px;color:#172B45;text-align:left;font-weight:850}
+            .category-icon{width:42px;font-size:27px;text-align:center}.category-arrow{margin-left:auto;color:var(--blue);font-size:22px}
+            .category-item.selected{border:2px solid var(--blue);background:#EDF4FF}
+            #screenLayer{position:fixed;inset:0;z-index:9999;display:none;background:var(--bg);overflow:hidden}
+            body.screen-open{overflow:hidden;height:100dvh}
+            #screenLayer .full-screen-view{position:absolute;inset:0;z-index:1;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+            #screenLayer .full-screen-view{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;z-index:2147483647!important;background:var(--bg)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+            #screenLayer .full-screen-content{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}
+            .full-screen-header{flex:0 0 auto;min-height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top));box-shadow:0 1px 5px #0001}
+            .full-screen-header button{border:0;background:#EDF4FF;color:var(--blue);border-radius:10px;padding:10px 13px;font-weight:850;white-space:nowrap}
+            .full-screen-header strong{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .full-screen-content{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:12px 15px 28px;max-width:760px;width:100%;margin:0 auto;-webkit-overflow-scrolling:touch}
+            .full-screen-content .card{margin-top:8px}
+
+            @media(min-width:900px){main{max-width:1080px;padding:28px 28px 36px}nav{justify-content:center;gap:12px}nav button{font-size:12px;padding:8px 18px;min-width:100px}.card{padding:20px}}
+            </style>
+            </head>
+            <body>
+            <header><div class="logo">chama<span>ê</span></div><div class="city">JOINVILLE • SC</div></header>
+            <nav aria-label="Navegação principal">
+            <button data-tab="home" class="active"><span class="nav-icon" aria-hidden="true">🏠</span><span>Início</span></button>
+            <button data-tab="orders"><span class="nav-icon" aria-hidden="true">🧾</span><span>Serviços</span></button>
+            <button data-tab="favorites"><span class="nav-icon" aria-hidden="true">💎</span><span>Favoritos</span></button>
+            <button data-tab="chat"><span class="nav-icon" aria-hidden="true">💬</span><span>Chat</span></button>
+            <button data-tab="provider"><span class="nav-icon" aria-hidden="true">🧰</span><span>Cadastro de serviços</span></button>
+            <button data-tab="admin" id="adminTab" style="display:none"><span class="nav-icon" aria-hidden="true">🛡️</span><span>Administração</span></button>
+            <button data-tab="profile"><span class="nav-icon" aria-hidden="true">👤</span><span>Perfil</span></button>
+            </nav>
+            <main id="app"><p>Carregando Chamaê...</p></main>
+            <div id="screenLayer" aria-live="polite"></div>
+            <div class="small">Chamaê • painel administrativo integrado</div>
+            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+            <script>
+            'use strict';
+            const SUPABASE_URL='https://rteeynlktogwjbjxezwr.supabase.co';
+            const SUPABASE_ANON_KEY='sb_publishable_p1JjWeb5D4l-TIGIKK5e8w_5z5j4_V6';
+            if(!window.supabase?.createClient){document.getElementById('app').innerHTML='<div class="error">Não foi possível carregar a conexão do Chamaê. Verifique sua internet e recarregue a página.</div>';throw new Error('Biblioteca Supabase não carregou.')}
+            const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+            const $=id=>document.getElementById(id);
+            const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+            let session=null,user=null,profile=null,tab='home',selected=null,selectedServiceId=null,selectedCategory=null,selectedProviderId=null,activeBooking=null;
+            let providers=[],services=[],bookings=[],messages=[],notifications=[],ratedBookingIds=[],loyaltyBonuses=[],loyaltyProgress={};let providersLoadError='',servicesLoadError='';
+            let favorites=[];try{favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}
+            let chatRealtime=null,bookingRealtime=null,notificationRealtime=null;
+            let renderVersion=0,bookingsLoadError='',chatLoadError='',notificationLoadError='';
+            let searchRenderTimer=null;
+            let isAdmin=false,adminDocuments=[],adminHistory=[];
+            const BASE_CATEGORIES=['Diarista','Manicure','Eletricista','Encanador','Babá','Cuidador de idosos','Personal trainer','Professor de música','Professor de idiomas','Pedreiro','Jardineiro','Serviços gerais','Multi serviços','Pintor','Mecânico','Marceneiro','Fotógrafo','Professor particular','Cuidador de pets'];
+            function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+            function validCPF(value){let c=String(value||'').replace(/\D/g,'');if(c.length!==11||/^(\d)\1{10}$/.test(c))return false;let calc=(base,factor)=>{let sum=0;for(let n of base)sum+=Number(n)*factor--;let r=(sum*10)%11;return r===10?0:r};return calc(c.slice(0,9),10)===Number(c[9])&&calc(c.slice(0,10),11)===Number(c[10])}
+            function arg(s=''){return JSON.stringify(String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+            function card(s){return `<section class="card">${s}</section>`}
+            function btn(t,fn,k=''){return `<button class="action ${k}" onclick="${fn}">${t}</button>`}
+            function notice(s,k='notice'){return `<div class="${k}">${esc(s)}</div>`}
+            function dateToday(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+            function icon(c=''){c=String(c).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();if(/diarist|limpeza|faxin/.test(c))return'🧹';if(/manicur|unha/.test(c))return'💅';if(/eletric/.test(c))return'⚡';if(/encan|hidraul/.test(c))return'🔧';if(/bab|cuidador/.test(c))return'🧸';if(/jardina/.test(c))return'🌿';if(/pintor/.test(c))return'🖌️';if(/pedreir|reforma/.test(c))return'🧱';if(/pet|animal/.test(c))return'🐾';if(/mecan|autom/.test(c))return'🚗';if(/personal/.test(c))return'🏋️';if(/professor|aula/.test(c))return'📚';return'🧰'}
+            async function clearChannel(ch){if(ch)try{await db.removeChannel(ch)}catch(e){console.warn('Falha ao encerrar canal realtime:',e)}}
+            async function clearRealtime(){await Promise.all([clearChannel(chatRealtime),clearChannel(bookingRealtime),clearChannel(notificationRealtime)]);chatRealtime=bookingRealtime=notificationRealtime=null}
+            async function loadProfile(){if(!user)return;let{data,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();if(error)throw error;profile=data}
+            async function ensureProfile(full='',phone='',role=null){
+             if(!user)return;
+             if(profile)return profile;
+             let meta=user.user_metadata||{},safe=role||meta.role||'cliente';
+             if(!['cliente','prestador'].includes(safe))safe='cliente';
+             let payload={id:user.id,full_name:full||meta.full_name||user.email?.split('@')[0]||'Usuário',phone:phone||meta.phone||null,role:safe};
+             let{data,error}=await db.from('profiles').insert(payload).select().single();
+             if(error){
+              if(error.code==='23505'){const retry=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();if(retry.error)throw retry.error;if(retry.data){profile=retry.data;return profile}}
+              throw error;
+             }
+             profile=data;return profile;
+            }
+            async function loadProviders(){let{data,error}=await db.from('providers').select('id,user_id,name,category,area,rating,half_day_price,full_day_price,about,available').order('created_at',{ascending:false});if(error){console.warn('Falha ao carregar profissionais:',error);providers=[];providersLoadError=error.message||'Não foi possível carregar os profissionais.'}else{providers=data||[];providersLoadError=''}}
+            async function loadServices(){let{data,error}=await db.from('services').select('*').order('created_at',{ascending:false});if(error){console.warn('Falha ao carregar serviços:',error);services=[];servicesLoadError=error.message||'Não foi possível carregar os serviços.'}else{services=data||[];servicesLoadError=''}}
+            async function loadBookings(){if(!user){bookings=[];bookingsLoadError='';return}let{data,error}=await db.from('bookings').select('*').order('created_at',{ascending:false});if(error){console.warn(error);bookings=[];bookingsLoadError=error.message||'Falha ao carregar contratações.'}else{bookings=data||[];bookingsLoadError=''}}
+            async function loadNotifications(){if(!user){notifications=[];return}let{data,error}=await db.from('notifications').select('*').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(30);if(error){console.warn('Falha ao carregar notificações:',error);notifications=[];notificationLoadError=error.message||'Não foi possível carregar as notificações.'}else{notifications=data||[];notificationLoadError=''}}
+            async function loadRated(){ratedBookingIds=[];let ids=bookings.filter(b=>b.client_id===user?.id&&b.status==='completed').map(b=>b.id);if(!ids.length)return;let{data,error}=await db.from('ratings').select('booking_id').in('booking_id',ids);if(!error)ratedBookingIds=(data||[]).map(x=>x.booking_id)}
+            async function loadLoyalty(){loyaltyBonuses=[];loyaltyProgress={};if(!user||profile?.role!=='prestador')return;let ids=providers.filter(p=>p.user_id===user.id).map(p=>p.id);if(!ids.length)return;let{data,error}=await db.from('provider_loyalty_bonuses').select('*').in('provider_id',ids).order('created_at',{ascending:false});if(error){console.warn(error);return}loyaltyBonuses=data||[];let{data:r,error:re}=await db.from('ratings').select('booking_id,provider_id').in('provider_id',ids).eq('score',5);if(re)return;let bookingIds=[...new Set((r||[]).map(x=>x.booking_id))],completed=[];if(bookingIds.length){let q=await db.from('bookings').select('id,provider_id').in('id',bookingIds).eq('status','completed');completed=q.data||[]}for(let id of ids){let n=completed.filter(b=>b.provider_id===id).length;loyaltyProgress[id]={total:n,completed:n%10,remaining:10-n%10}}}
+            function loyaltyView(ids){let rows=loyaltyBonuses.filter(x=>ids.includes(x.provider_id)),total=rows.reduce((a,x)=>a+Number(x.bonus_amount||0),0);return card(`<h2>Programa de fidelidade</h2><p class="sub">A cada 10 serviços concluídos com avaliação de 5 estrelas, bônus de 10% sobre o valor-base do décimo serviço do ciclo.</p>${ids.map(id=>{let p=providers.find(x=>x.id===id),d=loyaltyProgress[id]||{total:0,completed:0,remaining:10};return `<div class="service-row"><b>${esc(p?.name||'Profissional')}</b><p class="sub">${d.completed}/10 avaliações qualificadas · faltam ${d.remaining}</p><div style="height:9px;background:#e3eaf2;border-radius:10px"><div style="height:9px;width:${d.completed*10}%;background:#168653;border-radius:10px"></div></div></div>`}).join('')}<div class="between"><span class="sub">Bônus registrados</span><b class="price">${money(total)}</b></div>${rows.map(x=>`<p class="sub">Ciclo ${x.milestone_number}: ${money(x.bonus_amount)} · ${esc(x.status)}</p>`).join('')||'<p class="sub">Nenhum bônus registrado.</p>'}`)}
+            async function isVerified(id){let{data,error}=await db.from('provider_verifications').select('status').eq('provider_id',id).eq('status','verified').maybeSingle();return!error&&data?.status==='verified'}
+            async function verifiedProviders(list){const checks=await Promise.all(list.map(async p=>({provider:p,verified:await isVerified(p.id)})));return checks.filter(x=>x.verified).map(x=>({...x.provider,_verified:true}))}
+            async function checkAdmin(){isAdmin=false;if(!user)return false;const{data,error}=await db.rpc('chamae_is_admin');if(error){console.warn('Falha ao verificar acesso administrativo:',error);return false}isAdmin=data===true;return isAdmin}
+            async function loadAdminData(){
+             if(!user||!isAdmin)throw new Error('Acesso administrativo não autorizado.');
+             const fields='provider_id,user_id,status,submitted_at,legal_name,cpf,birth_date,phone,address,experience,identity_path,address_proof_path,photo_path';
+             const{data,error}=await db.from('provider_documents').select(fields).eq('status','pending').order('submitted_at',{ascending:false});
+             if(error)throw error;
+             adminDocuments=data||[];
+             const{data:history,error:historyError}=await db.from('chamae_document_reviews').select('provider_id,decision,created_at,reason').order('created_at',{ascending:false}).limit(50);
+             if(historyError)throw historyError;
+             adminHistory=history||[];
+            }
+            async function adminView(){
+             if(!user)return `<h1>Administração</h1>${notice('Entre em uma conta autorizada.','error')}`;
+             try{
+              const authorized=await checkAdmin();
+              if(!authorized)return `<h1>Administração</h1>${notice('Acesso administrativo não autorizado.','error')}`;
+              await loadAdminData();
+              let html=`<h1>Painel administrativo</h1><p class="sub">Análise manual dos documentos dos profissionais.</p><div class="between"><span class="tag">${adminDocuments.length} cadastro(s) aguardando análise</span><button class="link" onclick="render()">Atualizar</button></div>`;
+              if(!adminDocuments.length)html+=card('<p class="sub">Não existem documentos aguardando análise.</p>');
+              for(const d of adminDocuments){
+               const p=providers.find(x=>x.id===d.provider_id),cpf=String(d.cpf||'').replace(/\D/g,'');
+               const masked=cpf.length===11?cpf.slice(0,3)+'.***.***-'+cpf.slice(-2):'Não informado';
+               let links='';
+               for(const[label,path]of[['Documento de identidade',d.identity_path],['Comprovante de endereço',d.address_proof_path],['Foto para análise',d.photo_path]]){
+                if(!path)continue;
+                const expectedPrefix=`${d.user_id}/${d.provider_id}/`;
+                if(!d.user_id||!String(path).startsWith(expectedPrefix)){links+=`<p class="sub">${label}: caminho de arquivo inválido</p>`;continue}
+                const{data,error}=await db.storage.from('provider-documents').createSignedUrl(path,120);
+                let safeSignedUrl='';
+                if(!error&&data?.signedUrl){
+                 try{
+                  const parsed=new URL(data.signedUrl);
+                  const expectedOrigin=new URL(SUPABASE_URL).origin;
+                  if(parsed.protocol==='https:'&&parsed.origin===expectedOrigin)safeSignedUrl=parsed.href;
+                 }catch(urlError){console.warn('URL temporária de documento inválida:',urlError)}
+                }
+                links+=!safeSignedUrl?`<p class="sub">${label}: arquivo indisponível</p>`:`<p><a href="${esc(safeSignedUrl)}" target="_blank" rel="noopener noreferrer">${label} — visualizar</a></p>`;
+               }
+               html+=card(`<div class="between"><b>${esc(p?.name||d.legal_name||'Profissional')}</b><span class="tag">Pendente</span></div><p class="sub">${esc(p?.category||'')} · ${esc(p?.area||'')}</p><div class="service-row"><b>Dados para conferência</b><p class="sub">Nome: ${esc(d.legal_name||'')}</p><p class="sub">CPF: ${esc(masked)}</p><p class="sub">Nascimento: ${esc(d.birth_date||'')}</p><p class="sub">Telefone: ${esc(d.phone||'')}</p><p class="sub">Endereço: ${esc(d.address||'')}</p><p class="sub">Experiência: ${esc(d.experience||'Não informada')}</p></div><h3>Documentos privados</h3>${links}<textarea id="adminReason-${esc(d.provider_id)}" placeholder="Justificativa (obrigatória para rejeitar)"></textarea><button class="action" onclick="reviewDocument(${arg(d.provider_id)},'verified')">Aprovar documentação</button><button class="action danger" onclick="reviewDocument(${arg(d.provider_id)},'rejected')">Rejeitar documentação</button>`);
+              }
+              html+='<h2>Histórico de análises</h2>';
+              html+=adminHistory.map(h=>card(`<div class="between"><b>${h.decision==='verified'?'Aprovado':'Rejeitado'}</b><span class="sub">${h.created_at?new Date(h.created_at).toLocaleString('pt-BR'):''}</span></div><p class="sub">Profissional: ${esc(h.provider_id)}</p><p class="sub">Justificativa: ${esc(h.reason||'Não informada')}</p>`)).join('')||card('<p class="sub">Nenhuma análise registrada.</p>');
+              return html;
+             }catch(e){console.error(e);return `<h1>Painel administrativo</h1>${notice('Erro ao carregar dados administrativos: '+e.message,'error')}`}
+            }
+            const reviewingProviders=new Set();
+            async function reviewDocument(providerId,decision){
+             if(!user)return alert('Entre novamente para continuar.');
+             if(!['verified','rejected'].includes(decision))return alert('Decisão de análise inválida.');
+             if(reviewingProviders.has(providerId))return alert('Esta análise já está sendo processada.');
+             if(!adminDocuments.some(d=>d.provider_id===providerId&&d.status==='pending'))return alert('Este cadastro não está mais aguardando análise. Atualize o painel.');
+             const reason=$('adminReason-'+providerId)?.value.trim()||'';
+             if(decision==='rejected'&&!reason)return alert('Informe a justificativa da rejeição.');
+             if(reason.length>1000)return alert('A justificativa deve ter no máximo 1.000 caracteres.');
+             if(!confirm(`Confirma ${decision==='verified'?'aprovar':'rejeitar'} esta documentação?`))return;
+             reviewingProviders.add(providerId);
+             try{
+              const authorized=await checkAdmin();
+              if(!authorized)throw new Error('Sua conta não possui autorização administrativa.');
+              const{data:pending,error:pendingError}=await db.from('provider_documents').select('provider_id').eq('provider_id',providerId).eq('status','pending').maybeSingle();
+              if(pendingError)throw pendingError;
+              if(!pending?.provider_id)throw new Error('Este cadastro não está mais pendente. Atualize o painel.');
+              const{error}=await db.rpc('chamae_review_provider_document',{p_provider_id:providerId,p_decision:decision,p_reason:reason||null});
+              if(error)throw error;
+              await loadProviders();
+              await loadAdminData();
+              await render();
+              alert(decision==='verified'?'Documentação aprovada.':'Documentação rejeitada e justificativa registrada.');
+             }catch(e){
+              console.error('Falha ao revisar documentação:',e);
+              alert('Não foi possível concluir a análise: '+(e.message||'Falha inesperada.'));
+             }finally{
+              reviewingProviders.delete(providerId);
+             }
+            }
+            function authView(){if(recoveryMode)return '<h1>Redefinir senha</h1><p class="sub">Escolha uma nova senha para sua conta.</p>'+card(`<input id="recoveryPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Nova senha (mínimo 6 caracteres)">${btn('Salvar nova senha','updateRecoveredPassword()')}`);return `<h1>Bem-vindo ao Chamaê</h1><p class="sub">Entre ou crie sua conta para contratar serviços ou oferecer seu trabalho.</p>${card(`<h2>Entrar</h2><input id="loginEmail" type="email" autocomplete="username" placeholder="Seu e-mail"><input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha">${btn('Entrar','login()')}<button class="link" type="button" onclick="forgotPassword()">Esqueci minha senha</button><hr><h2>Criar conta</h2><input id="newName" placeholder="Nome completo"><input id="newPhone" placeholder="Telefone / WhatsApp"><input id="newEmail" type="email" autocomplete="email" placeholder="E-mail"><input id="newPass" type="password" autocomplete="new-password" minlength="6" placeholder="Senha (mínimo 6 caracteres)"><select id="newRole"><option value="cliente">Quero contratar serviços</option><option value="prestador">Quero oferecer serviços</option></select>${btn('Criar minha conta','signup()','orange')}<p class="sub">A confirmação de cadastro segue a configuração do Supabase Auth.</p>`)}`}            async function login(){
+             const email=$('loginEmail')?.value.trim(),password=$('loginPass')?.value;
+             if(!email||!password)return alert('Informe e-mail e senha.');
+             const{data,error}=await db.auth.signInWithPassword({email,password});
+             if(error)return alert(error.message);
+             try{await applyAuthSession(data.session);tab='home';await render()}
+             catch(e){console.error(e);alert('Login realizado, mas não foi possível carregar seus dados: '+e.message)}
+            }
+            async function signup(){
+             const full=$('newName')?.value.trim()||'',phone=$('newPhone')?.value.trim()||'',email=$('newEmail')?.value.trim()||'',password=$('newPass')?.value||'',role=$('newRole')?.value;
+             if(full.length<2||full.length>100)return alert('Informe seu nome completo (2 a 100 caracteres).');
+             if(!email||!/^\S+@\S+\.\S+$/.test(email))return alert('Informe um e-mail válido.');
+             if(password.length<6)return alert('A senha deve ter pelo menos 6 caracteres.');
+             if(phone.length>25)return alert('O telefone deve ter no máximo 25 caracteres.');
+             if(!['cliente','prestador'].includes(role))return alert('Selecione um tipo de conta válido.');
+             const{data,error}=await db.auth.signUp({email,password,options:{data:{full_name:full,phone,role}}});
+             if(error)return alert(error.message);
+             if(data.session){
+              try{await applyAuthSession(data.session);tab='profile';await render();alert('Conta criada!')}
+              catch(e){console.error(e);alert('Conta criada, mas não foi possível carregar o perfil: '+e.message)}
+             }else alert('Conta criada. Confirme seu e-mail e depois entre no aplicativo.');
+            }
+            async function forgotPassword(){
+             const email=$('loginEmail')?.value.trim();
+             if(!email)return alert('Digite seu e-mail no campo de entrada para receber o link de recuperação.');
+             const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
+             if(error)return alert('Não foi possível enviar a recuperação: '+error.message);
+             alert('Se o e-mail estiver cadastrado, você receberá as instruções de recuperação. Verifique também a caixa de spam.');
+            }
+            let authReady=false,authQueue=Promise.resolve(),authGeneration=0,recoveryMode=false;
+            async function updateRecoveredPassword(){
+             const password=$('recoveryPassword')?.value||'';
+             if(password.length<6)return alert('A nova senha deve ter pelo menos 6 caracteres.');
+             const{error}=await db.auth.updateUser({password});
+             if(error)return alert('Não foi possível atualizar a senha: '+error.message);
+             recoveryMode=false;await render();alert('Senha atualizada com sucesso.');
+            }
+            async function applyAuthSession(nextSession){
+             const nextUser=nextSession?.user||null,nextId=nextUser?.id||null,currentId=user?.id||null;
+             session=nextSession||null;
+             if(authReady&&nextId===currentId)return;
+             authReady=true;
+             const generation=++authGeneration;
+             user=nextUser;profile=null;isAdmin=false;
+             if(user){
+              try{
+               await loadProfile();
+               if(!profile)await ensureProfile();
+               await refreshUserData();
+              }catch(e){console.error('Falha ao carregar sessão do usuário:',e);if(generation===authGeneration)bookingsLoadError=e.message||'Não foi possível carregar os dados da conta.'}
+             }else{
+              await clearRealtime();
+              adminDocuments=[];adminHistory=[];
+              providers=[];services=[];bookings=[];messages=[];notifications=[];notificationLoadError='';chatLoadError='';
+              ratedBookingIds=[];loyaltyBonuses=[];loyaltyProgress={};
+              activeBooking=null;selected=null;selectedServiceId=null;selectedCategory=null;
+              bookingsLoadError='';
+              await loadProviders();await loadServices();
+             }
+             if(generation===authGeneration)await render();
+            }
+            async function refreshUserData(){await loadProfile();await checkAdmin();await loadProviders();await loadServices();await loadBookings();await loadNotifications();await loadRated();await loadLoyalty();await subscribeBookings();await subscribeNotifications()}
+            async function logout(){const{error}=await db.auth.signOut();if(error)return alert('Não foi possível sair da conta: '+error.message);await applyAuthSession(null);tab='home';await render()}
+            function normalizeCategory(value=''){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+            function providerMatchesCategory(provider,category){
+             const target=normalizeCategory(category);
+             if(!target)return false;
+             const terms=[provider.category,provider.name,...services.filter(s=>s.provider_id===provider.id&&(s.available===true||s.available===undefined)).flatMap(s=>[s.category,s.title,s.description])].map(normalizeCategory).filter(Boolean);
+             return terms.some(term=>term===target||term.startsWith(target+' ')||target.startsWith(term+' ')||term.includes(target)||target.includes(term));
+            }
+            function providerMatchesSearch(provider,query=''){
+             const q=normalizeCategory(query);
+             if(!q)return true;
+             const terms=[provider.name,provider.area,provider.category,...services.filter(s=>s.provider_id===provider.id&&s.available===true).flatMap(s=>[s.title,s.category,s.description])].map(normalizeCategory).filter(Boolean);
+             return terms.some(term=>term.includes(q));
+            }
+            function providerCard(p){let count=services.filter(s=>s.provider_id===p.id&&s.available===true).length;return card(`<div class="row"><div class="avatar">${icon(p.category)}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</div><div class="rating">${Number(p.rating)>0?'★ '+Number(p.rating).toFixed(1):'Sem avaliações'}</div>${p._verified?'<span class="verified">✓ Perfil Verificado</span>':''}</div></div><div class="between"><span class="price">${count} serviço(s)</span><button class="link" onclick="toggleFavorite(${arg(p.id)})">${favorites.includes(p.id)?'♥ Salvo':'♡ Favoritar'}</button><button class="link" onclick="selectProvider(${arg(p.id)})">Ver serviços ›</button></div>`)}
+            async function home(){
+             if(!user)return authView();
+             const q=(window.searchQuery||'').trim();
+             const cats=[...new Set([...BASE_CATEGORIES,...providers.map(p=>p.category).filter(Boolean),...services.filter(s=>s.available===true).map(s=>s.category).filter(Boolean)])];
+             if(selected){
+              const p=providers.find(x=>x.id===selected);
+              if(p&&p.available===true){
+               const detail=await providerDetail(p);
+               return `<section class="full-screen-view"><div class="full-screen-header"><button onclick="selected=null;selectedServiceId=null;render()">← Voltar</button><strong>Perfil do profissional</strong></div><div class="full-screen-content">${detail}</div></section>`;
+              }
+              selected=null;selectedServiceId=null;
+             }
+             if(selectedCategory){
+              let list=providers.filter(p=>p.available===true&&providerMatchesCategory(p,selectedCategory)&&providerMatchesSearch(p,q));
+              list=await verifiedProviders(list);
+              const results=list.length?list.map(providerCard).join(''):card('<p class="sub">Não encontramos profissionais verificados nesta categoria. Confira se há profissionais cadastrados, disponíveis e com verificação aprovada no Chamaê.</p>');
+              return `<section class="full-screen-view"><div class="full-screen-header"><button onclick="selectedCategory=null;selected=null;render()">← Voltar</button><strong>${icon(selectedCategory)} ${esc(selectedCategory)}</strong></div><div class="full-screen-content">${providersLoadError||servicesLoadError?notice('Não foi possível carregar todos os cadastros. '+[providersLoadError,servicesLoadError].filter(Boolean).join(' · '),'error'):''}${results}</div></section>`;
+             }
+             let html=`<h1>Encontre profissionais</h1><p class="sub">Escolha uma categoria e encontre profissionais em Joinville e região.</p><input id="providerSearch" placeholder="Buscar serviço, profissional ou bairro" value="${esc(window.searchQuery||'')}" oninput="searchAndRender(this)">`;
+             if(providersLoadError||servicesLoadError){
+              html+=notice('Não foi possível carregar todos os cadastros. '+[providersLoadError,servicesLoadError].filter(Boolean).join(' · '),'error');
+             }
+             html+=`<div class="category-list">${cats.filter(c=>!q||normalizeCategory(c).includes(normalizeCategory(q))||providers.some(p=>providerMatchesCategory(p,c)&&providerMatchesSearch(p,q))).map(c=>`<button class="category-item" onclick="openCategory(${arg(c)})"><span class="category-icon">${icon(c)}</span>${esc(c)}<span class="category-arrow">›</span></button>`).join('')}</div>`;
+             const matches=providers.filter(p=>p.available===true&&providerMatchesSearch(p,q));
+             if(q){
+              const verified=await verifiedProviders(matches);
+              html+='<h2>Resultados da busca</h2>';
+              html+=verified.length?verified.map(providerCard).join(''):card('<p class="sub">Nenhum profissional verificado encontrado para essa busca.</p>');
+             }else{
+              html+=card('<p class="sub">Selecione uma categoria para visualizar os profissionais correspondentes.</p>');
+             }
+             return html;
+            }
+            function searchAndRender(input){window.searchQuery=input.value;const start=input.selectionStart,end=input.selectionEnd;clearTimeout(searchRenderTimer);searchRenderTimer=setTimeout(async()=>{await render();const next=$('providerSearch');if(next){next.focus({preventScroll:true});try{next.setSelectionRange(start,end)}catch(_){}}},180)}
+            function openCategory(c){
+             selectedCategory=c;selected=null;selectedServiceId=null;tab='home';
+             const layer=$('screenLayer');
+             if(layer&&layer.parentElement!==document.body)document.body.appendChild(layer);
+             render();
+            }
+            function closeFullScreen(){selected=null;selectedServiceId=null;selectedCategory=null;render()}
+            function selectProvider(id){selected=id;selectedServiceId=null;render()}
+            function selectService(pid,sid){selected=pid;selectedServiceId=sid;render()}
+            async function providerDetail(p){let verified=!!p.available&&await isVerified(p.id);if(!verified)return card(`<button class="link" onclick="selected=null;render()">‹ Voltar</button><h2>Perfil indisponível</h2><p class="sub">Este profissional não está disponível para novas solicitações no momento.</p>`);let list=services.filter(s=>s.provider_id===p.id&&s.available===true);return card(`<button class="link" onclick="selected=null;render()">‹ Voltar</button><div class="row"><div class="avatar">${icon(p.category)}</div><div><h1>${esc(p.name)}</h1><p class="sub">${esc(p.category)} · ${esc(p.area||'Joinville')}</p><div class="rating">${Number(p.rating)>0?'★ '+Number(p.rating).toFixed(1):'Sem avaliações'}</div>${verified?'<span class="verified">✓ Perfil Verificado</span>':''}</div></div><p class="sub">${esc(p.about||'')}</p><h2>Serviços disponíveis</h2>${list.map(s=>{let opts=[['single','Serviço avulso',s.price],['half','Meia diária (4 horas)',s.half_day_price],['full','Diária completa (8 horas)',s.full_day_price]].filter(x=>Number(x[2])>0);return `<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.description||s.category||'')}</p><p class="sub">${opts.map(x=>x[1]+': '+money(x[2])).join(' · ')||'Preço não definido'}</p><button class="action" ${opts.length?'':'disabled'} onclick="selectService(${arg(p.id)},${arg(s.id)})">${selectedServiceId===s.id?'Selecionado':'Selecionar serviço'}</button></div>`}).join('')||'<p class="sub">Nenhum serviço disponível.</p>'}<h2>Solicitar contratação</h2><label class="sub">Modalidade</label><select id="bookingDuration"><option value="single">Serviço avulso</option><option value="half">Meia diária (4 horas)</option><option value="full">Diária completa (8 horas)</option></select><label class="sub">Data</label><input id="serviceDate" type="date" min="${dateToday()}"><label class="sub">Horário</label><input id="serviceTime" type="time"><textarea id="serviceNotes" placeholder="Observações"></textarea><p class="notice">A solicitação depende do aceite do profissional. Somente modalidades com preço cadastrado podem ser contratadas.</p>${btn('Solicitar serviço','createBooking()')}`)}
+            function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];try{localStorage.setItem('chamae_favorites',JSON.stringify(favorites))}catch(e){console.warn('Não foi possível salvar favoritos neste aparelho:',e);alert('O navegador bloqueou o armazenamento local. Seus favoritos podem não ficar salvos após fechar a página.')}render()}
+            async function createBooking(){
+             if(!user)return alert('Entre na sua conta.');
+             const p=providers.find(x=>x.id===selected);
+             const s=services.find(x=>x.id===selectedServiceId&&x.provider_id===p?.id&&x.available===true);
+             if(!p||!s)return alert('Selecione um profissional e um serviço.');
+             if(p.available!==true)return alert('Este profissional está indisponível no momento.');
+             if(s.provider_id!==p.id||s.available!==true)return alert('O serviço selecionado não está mais disponível. Atualize a tela.');
+             if(!['cliente','prestador'].includes(profile?.role))return alert('Não foi possível identificar o tipo da sua conta. Entre novamente.');
+             if(p.user_id===user.id)return alert('Você não pode contratar seu próprio serviço.');
+             if(!await isVerified(p.id))return alert('Este profissional ainda não possui verificação aprovada.');
+             const duration=$('bookingDuration')?.value;
+             if(!['single','half','full'].includes(duration))return alert('Selecione uma modalidade válida.');
+             const rawPrice=duration==='half'?s.half_day_price:duration==='full'?s.full_day_price:s.price;
+             const price=Number(rawPrice);
+             if(rawPrice===null||rawPrice===undefined||rawPrice===''||!Number.isFinite(price)||price<=0)return alert('Esta modalidade não possui preço cadastrado para o serviço selecionado.');
+             const date=$('serviceDate')?.value,time=$('serviceTime')?.value,notes=$('serviceNotes')?.value?.trim()||'';
+             if(!date||!/^\d{4}-\d{2}-\d{2}$/.test(date))return alert('Escolha uma data válida.');
+             const parsedDate=new Date(date+'T00:00:00');if(Number.isNaN(parsedDate.getTime())||parsedDate.toISOString().slice(0,10)!==date)return alert('Informe uma data real do calendário.');
+             if(date<dateToday())return alert('A data não pode estar no passado.');
+             if(!time||!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))return alert('Informe um horário válido.');
+             if(date===dateToday()){const now=new Date(),currentTime=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;if(time<=currentTime)return alert('Escolha um horário futuro para hoje.');}
+             const payload={client_id:user.id,provider_id:p.id,provider_name:p.name,service_category:s.category||p.category,service_id:s.id,duration,service_date:date,service_time:time,notes,base_amount:price,tip_amount:0,total_amount:price,status:'pending'};
+             const{error}=await db.from('bookings').insert(payload);
+             if(error){console.error('Erro ao criar contratação:',error);return alert('Não foi possível solicitar: '+error.message)}
+             selected=selectedServiceId=selectedCategory=null;tab='orders';await loadBookings();await loadNotifications();await render();alert('Solicitação enviada! A confirmação e as notificações dependem da configuração do sistema.');
+            }
+            function statusLabel(s){return({pending:'Aguardando prestador',accepted:'Serviço aceito',rejected:'Solicitação recusada',in_progress:'Atendimento em andamento',completed:'Serviço concluído',cancelled:'Cancelado'})[s]||s}
+            function durationLabel(d){return({single:'Serviço avulso',half:'Meia diária · até 4 horas',full:'Diária completa · até 8 horas'})[d]||d||'Modalidade não informada'}
+            function timeline(b){return[['Solicitado',b.created_at],['Aceito',b.accepted_at],['Iniciado',b.started_at],['Concluído',b.completed_at],['Cancelado',b.cancelled_at],['Recusado',b.rejected_at]].filter(x=>x[1]).map(x=>`<div class="sub">• ${x[0]}: ${new Date(x[1]).toLocaleString('pt-BR')}</div>`).join('')}
+            function canAccessBooking(b){return !!user&&!!b&&(b.client_id===user.id||providers.some(p=>p.id===b.provider_id&&p.user_id===user.id))}
+            function bookingActions(b){let isP=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id),isC=b.client_id===user.id,h='';if(isP&&b.status==='pending')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'accepted')">Aceitar serviço</button><button class="action secondary" onclick="changeStatus(${arg(b.id)},'rejected')">Rejeitar serviço</button>`;if(isP&&b.status==='accepted')h+=`<button class="action orange" onclick="changeStatus(${arg(b.id)},'in_progress')">Iniciar atendimento</button>`;if(isP&&b.status==='in_progress')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'completed')">Concluir atendimento</button>`;if(isC&&['pending','accepted'].includes(b.status))h+=`<button class="action secondary" onclick="changeStatus(${arg(b.id)},'cancelled')">Cancelar solicitação</button>`;return h}
+            async function changeStatus(id,status){
+             try{
+              if(!user)return alert('Entre na sua conta novamente.');
+              const fields={accepted:'accepted_at',rejected:'rejected_at',in_progress:'started_at',completed:'completed_at',cancelled:'cancelled_at'};
+              if(!fields[status])return alert('Status inválido.');
+              const booking=bookings.find(b=>b.id===id);
+              if(!booking)return alert('Contratação não encontrada. Atualize a tela e tente novamente.');
+              const isProvider=providers.some(p=>p.id===booking.provider_id&&p.user_id===user.id);
+              const isClient=booking.client_id===user.id;
+              const providerTransitions={pending:['accepted','rejected'],accepted:['in_progress'],in_progress:['completed']};
+              const permitted=(isProvider&&(providerTransitions[booking.status]||[]).includes(status))||(isClient&&['pending','accepted'].includes(booking.status)&&status==='cancelled');
+              if(!permitted)return alert('Sua conta não tem permissão para esta alteração ou o status atual não permite essa etapa.');
+              if(status==='accepted'){
+               const provider=providers.find(p=>p.id===booking.provider_id&&p.user_id===user.id);
+               if(!provider||provider.available!==true)return alert('Seu perfil profissional está indisponível. Ative-o antes de aceitar solicitações.');
+              }
+              if(!confirm('Confirmar esta alteração?'))return;
+              const update={status,[fields[status]]:new Date().toISOString()};
+              const{data,error}=await db.from('bookings').update(update).eq('id',id).eq('status',booking.status).select('id,status').maybeSingle();
+              if(error)throw error;
+              if(!data)return alert('A contratação foi alterada por outra ação ou você não tem permissão. Atualize a tela.');
+              await loadBookings();await loadNotifications();await loadRated();await render();
+              alert('Status atualizado: '+statusLabel(data.status));
+             }catch(e){console.error('Erro ao atualizar contratação:',e);alert('Não foi possível atualizar a contratação: '+(e.message||e))}
+            }
+            async function submitRating(id,pid){
+             try{
+              if(!user)return alert('Entre na sua conta.');
+              if(ratedBookingIds.includes(id))return alert('Este serviço já foi avaliado.');
+              const booking=bookings.find(b=>b.id===id);
+              if(!booking||booking.client_id!==user.id||booking.provider_id!==pid||booking.status!=='completed')return alert('Somente o cliente pode avaliar o profissional após a conclusão do serviço.');
+              const ratingInput=$('rating-'+id),commentInput=$('comment-'+id);
+              if(!ratingInput||!commentInput)return alert('Não foi possível carregar o formulário de avaliação.');
+              const score=Number(ratingInput.value),comment=commentInput.value.trim()||null;
+              if(!Number.isInteger(score)||score<1||score>5)return alert('Selecione uma nota válida.');
+              if(comment&&comment.length>1000)return alert('O comentário deve ter no máximo 1.000 caracteres.');
+              const{error}=await db.from('ratings').insert({booking_id:id,client_id:user.id,provider_id:pid,score,comment});
+              if(error)throw error;
+              ratedBookingIds.push(id);
+              await loadRated();await loadLoyalty();await render();
+              alert('Avaliação enviada. Obrigado!');
+             }catch(e){console.error('Erro ao enviar avaliação:',e);alert('Não foi possível enviar a avaliação: '+(e.message||e))}
+            }
+            function notificationsView(){let unread=notifications.filter(n=>!n.read_at).length;return card(`<div class="between"><h2>Notificações</h2><span class="tag">${unread} não lida(s)</span></div>${notificationLoadError?notice(notificationLoadError,'error'):''}${notifications.map(n=>`<div class="service-row"><b>${esc(n.title)}</b><p class="sub">${esc(n.body)}</p>${!n.read_at?`<button class="link" onclick="markRead(${arg(n.id)})">Marcar como lida</button>`:''}</div>`).join('')||'<p class="sub">Nenhuma notificação.</p>'}`)}
+            async function markRead(id){
+             try{
+              if(!user)return alert('Entre na sua conta novamente.');
+              const{data,error}=await db.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id).eq('recipient_id',user.id).is('read_at',null).select('id').maybeSingle();
+              if(error)throw error;
+              if(!data)return;
+              await loadNotifications();await render();
+             }catch(e){console.error('Erro ao marcar notificação:',e);alert('Não foi possível atualizar a notificação: '+(e.message||e))}
+            }
+            function orders(){if(!user)return authView();return `<h1>Meus serviços</h1><p class="sub">Acompanhe solicitações, horários e avaliações.</p>${bookingsLoadError?notice('Não foi possível carregar suas contratações: '+bookingsLoadError,'error'):''}${notificationsView()}${bookings.map(b=>card(`<div class="between"><b>${esc(b.service_category)} · ${esc(b.provider_name)}</b><span class="tag">${esc(statusLabel(b.status))}</span></div><p class="sub">${esc(durationLabel(b.duration))} · ${esc(b.service_date||'')} ${esc(String(b.service_time||'').slice(0,5))}</p><p class="sub">${esc(b.notes||'Sem observações.')}</p>${timeline(b)}<b class="price">${money(b.total_amount)}</b><button class="link" onclick="openChat(${arg(b.id)})">Abrir chat ›</button>${bookingActions(b)}${b.client_id===user.id&&b.status==='completed'&&!ratedBookingIds.includes(b.id)?`<label class="sub">Avalie este serviço</label><select id="rating-${b.id}"><option value="5">5 estrelas</option><option value="4">4 estrelas</option><option value="3">3 estrelas</option><option value="2">2 estrelas</option><option value="1">1 estrela</option></select><input id="comment-${b.id}" placeholder="Comentário (opcional)"><button class="action secondary" onclick="submitRating(${arg(b.id)},${arg(b.provider_id)})">Enviar avaliação</button>`:''}`)).join('')||card('<p class="sub">Você ainda não possui solicitações.</p>')}`}
+            async function favoritesPage(){if(!user)return authView();let list=await verifiedProviders(providers.filter(p=>favorites.includes(p.id)&&p.available===true));return `<h1>Favoritos</h1><p class="sub">Salvos neste aparelho.</p>${list.map(p=>card(`<b>${esc(p.name)}</b><p class="sub">${esc(p.category)} · ${esc(p.area||'')}</p><button class="link" onclick="toggleFavorite(${arg(p.id)})">Remover</button><button class="link" onclick="selectProvider(${arg(p.id)});tab='home';render()">Ver perfil ›</button>`)).join('')||card('<p class="sub">Nenhum profissional favorito está disponível e verificado no momento.</p>')}`}
+            async function openChat(id){const booking=bookings.find(b=>b.id===id);if(!canAccessBooking(booking))return alert('Você não tem acesso ao chat desta contratação.');activeBooking=id;tab='chat';await loadMessages();await render();subscribeChat()}
+            async function loadMessages(){if(!activeBooking){messages=[];return}const booking=bookings.find(b=>b.id===activeBooking);if(!canAccessBooking(booking)){messages=[];return}let{data,error}=await db.from('messages').select('*').eq('booking_id',activeBooking).order('created_at');if(error){console.warn('Falha ao carregar mensagens:',error);messages=[];chatLoadError=error.message||'Não foi possível carregar as mensagens.'}else{messages=data||[];chatLoadError=''}}
+            function chatView(){if(!user)return authView();let b=bookings.find(x=>x.id===activeBooking);if(activeBooking&&!canAccessBooking(b))return `<h1>Chat do serviço</h1>${notice('Você não tem acesso a esta conversa. Abra o chat a partir de uma contratação sua.','error')}`;return `<h1>Chat do serviço</h1><p class="sub">${b?esc(b.provider_name)+' · '+esc(b.service_category):'Selecione uma contratação.'}</p>${chatLoadError?notice(chatLoadError,'error'):''}${activeBooking?card(messages.map(m=>`<div class="chat ${m.sender_id===user.id?'mine':''}">${esc(m.body)}</div>`).join('')+`<input id="chatText" maxlength="2000" placeholder="Digite sua mensagem"><button class="action" onclick="sendMessage()">Enviar</button>`):card('<p class="sub">Abra o chat a partir de uma contratação.</p>')}`}
+            async function sendMessage(){
+             try{
+              if(!user)return alert('Entre na sua conta.');
+              const body=$('chatText')?.value?.trim()||'',bookingId=activeBooking;
+              if(!bookingId)return alert('Abra uma contratação para usar o chat.');
+              if(!body)return alert('Digite uma mensagem antes de enviar.');
+              if(body.length>2000)return alert('A mensagem deve ter no máximo 2.000 caracteres.');
+              const booking=bookings.find(b=>b.id===bookingId);
+              if(!canAccessBooking(booking))return alert('Você não tem acesso ao chat desta contratação.');
+              const{error}=await db.from('messages').insert({booking_id:bookingId,sender_id:user.id,body});
+              if(error)throw error;
+              await loadMessages();
+              if(tab==='chat'&&activeBooking===bookingId)await render();
+             }catch(e){console.error('Erro ao enviar mensagem:',e);alert('Não foi possível enviar a mensagem: '+(e.message||e))}
+            }
+            async function subscribeChat(){await clearChannel(chatRealtime);chatRealtime=null;const id=activeBooking,recipientId=user?.id,booking=bookings.find(b=>b.id===id);if(!id||!recipientId||!canAccessBooking(booking))return;chatRealtime=db.channel('chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'booking_id=eq.'+id},async payload=>{if(!user||user.id!==recipientId||activeBooking!==id||!canAccessBooking(bookings.find(b=>b.id===id)))return;await loadMessages();if(tab==='chat')await render()}).subscribe()}
+            async function subscribeBookings(){await clearChannel(bookingRealtime);bookingRealtime=null;if(!user)return;bookingRealtime=db.channel('bookings-'+user.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings'},async()=>{await loadBookings();await loadRated();if(['orders','provider'].includes(tab))render()}).subscribe()}
+            async function subscribeNotifications(){await clearChannel(notificationRealtime);notificationRealtime=null;if(!user)return;const recipientId=user.id;notificationRealtime=db.channel('notifications-'+recipientId).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'recipient_id=eq.'+recipientId},async payload=>{if(!user||user.id!==recipientId)return;await loadNotifications();if(tab==='orders')await render();if(payload.new?.title&&tab!=='orders')console.info('Nova notificação do Chamaê:',payload.new.title)}).subscribe()}
+            function providerArea(){if(!user)return authView();if(profile?.role!=='prestador')return `<h1>Área profissional</h1>${card('<p class="sub">Sua conta está configurada como cliente. Use uma conta de prestador para publicar serviços.</p>')}`;let mine=providers.filter(p=>p.user_id===user.id),current=mine.find(p=>p.id===selectedProviderId)||mine[0]||null;if(current)selectedProviderId=current.id;let html=`<h1>Área profissional</h1><p class="sub">Cadastre vários profissionais e serviços ilimitados.</p>${loyaltyView(mine.map(p=>p.id))}${card(`<h2>Meus profissionais (${mine.length})</h2>${mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId=${arg(p.id)};render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join('')}<button class="action orange" onclick="newProviderForm()">+ Adicionar profissional</button>`)}`;if(current){let list=services.filter(s=>s.provider_id===current.id);html+=card(`<div class="between"><h2>${esc(current.name)}</h2><span class="tag">${current.available?'Ativo':'Inativo'}</span></div><p class="sub">${esc(current.category)} · ${esc(current.area||'')}</p><button class="link" onclick="editProviderForm(${arg(current.id)})">Editar perfil</button><button class="action ${current.available?'secondary':''}" onclick="toggleProviderAvailability(${arg(current.id)})">${current.available?'Ficar indisponível':'Ativar para receber solicitações'}</button><button class="link" onclick="deleteProvider(${arg(current.id)})">Desativar perfil</button><h2>Serviços (${list.length})</h2>${list.map(s=>`<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.category)} · avulso ${money(s.price)} · 4h ${money(s.half_day_price)} · 8h ${money(s.full_day_price)}</p><button class="link" onclick="editServiceForm(${arg(s.id)})">Editar</button><button class="link" onclick="deleteService(${arg(s.id)})">Desativar</button></div>`).join('')}<button class="action" onclick="newServiceForm(${arg(current.id)})">+ Adicionar serviço</button>${bookingsLoadError?notice('Não foi possível carregar as contratações: '+bookingsLoadError,'error'):''}<p class="notice">A documentação será analisada manualmente pela equipe Chamaê. O selo Perfil Verificado só será liberado após aprovação administrativa. O perfil permanecerá indisponível enquanto a análise estiver pendente ou rejeitada.</p>`)}html+='<div id="providerEditor"></div><div id="serviceEditor"></div>';return html}
+            function providerForm(p=null){return card(`<h2>${p?'Editar profissional':'Novo profissional'}</h2><h3>Informações profissionais</h3><input id="provName" placeholder="Nome profissional" value="${esc(p?.name||profile?.full_name||'')}" required><input id="provCategory" list="cats" placeholder="Categoria principal" value="${esc(p?.category||'')}" required><datalist id="cats">${BASE_CATEGORIES.map(c=>`<option value="${esc(c)}">`).join('')}</datalist><input id="provArea" placeholder="Bairro/região" value="${esc(p?.area||'')}" required><textarea id="provAbout" placeholder="Experiência, especialidades e apresentação">${esc(p?.about||'')}</textarea><h3>Dados para verificação (privados)</h3><input id="docLegalName" placeholder="Nome completo conforme documento" autocomplete="name" required><input id="docCPF" inputmode="numeric" placeholder="CPF (somente números)" maxlength="14" required><input id="docBirth" type="date" aria-label="Data de nascimento" required><input id="docPhone" type="tel" placeholder="Telefone / WhatsApp" autocomplete="tel" required><input id="docAddress" placeholder="Endereço completo" autocomplete="street-address" required><input id="docExperience" placeholder="Tempo de experiência (ex.: 3 anos)"><label class="sub">Foto para análise interna (opcional — nunca aparece no perfil público)</label><input id="docPhoto" type="file" accept="image/jpeg,image/png,image/webp"><label class="sub">Documento de identidade — RG ou CNH</label><input id="docIdentity" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><label class="sub">Comprovante de endereço</label><input id="docAddressProof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><p class="notice">Na primeira solicitação, envie RG/CNH e comprovante. Ao editar, os documentos já enviados são mantidos se você não selecionar novos arquivos. A documentação será analisada manualmente pela equipe Chamaê. O perfil ficará indisponível até a aprovação. A foto, se enviada, fica privada e nunca é exibida no perfil público. O acesso aos documentos depende das permissões privadas do Supabase.</p><h3>Preços de referência</h3><input id="provHalf" type="number" min="0" step=".01" placeholder="Preço referência meia diária" value="${p?.half_day_price??''}"><input id="provFull" type="number" min="0" step=".01" placeholder="Preço referência diária completa" value="${p?.full_day_price??''}"><button class="action" onclick="saveProvider(${arg(p?.id||'')})">Enviar cadastro para verificação</button><button class="action secondary" onclick="render()">Cancelar</button>`)}
+            function newProviderForm(){if(!user||profile?.role!=='prestador')return alert('Somente contas profissionais podem cadastrar profissionais.');let el=$('providerEditor');if(el){el.innerHTML=providerForm();el.scrollIntoView({behavior:'smooth'})}}
+            async function editProviderForm(id){if(!user||profile?.role!=='prestador')return alert('Entre em uma conta profissional para editar.');let p=providers.find(x=>x.id===id&&x.user_id===user.id),el=$('providerEditor');if(!p||!el)return alert('Você não tem permissão para editar este cadastro.');el.innerHTML=providerForm(p);let{data,error}=await db.from('provider_documents').select('legal_name,cpf,birth_date,phone,address,experience').eq('provider_id',id).eq('user_id',user.id).maybeSingle();if(error){console.warn('Não foi possível carregar dados documentais:',error);alert('Não foi possível carregar os dados privados do cadastro: '+error.message);return}if(data){for(let[field,value]of Object.entries({docLegalName:data.legal_name,docCPF:data.cpf,docBirth:data.birth_date,docPhone:data.phone,docAddress:data.address,docExperience:data.experience})){let input=$(field);if(input)input.value=value||''}}}
+            async function saveProvider(id=''){
+             let uploadedPaths=[],createdProviderId=null,keepUploaded=false,forceUnavailable=false;
+             try{
+              if(!user)throw new Error('Entre na sua conta novamente.');
+              if(profile?.role!=='prestador')throw new Error('Esta função está disponível somente para contas profissionais.');
+              let val=x=>$(x)?.value?.trim()||'',file=x=>$(x)?.files?.[0]||null,half=val('provHalf'),full=val('provFull');
+              const cpf=val('docCPF').replace(/\D/g,'');
+              const newPersonal={legal_name:val('docLegalName'),cpf,birth_date:val('docBirth'),phone:val('docPhone'),address:val('docAddress'),experience:val('docExperience')||null};
+              if(!val('provName')||!val('provCategory')||!val('provArea'))return alert('Preencha nome profissional, categoria e bairro.');
+              if(!newPersonal.legal_name||!validCPF(cpf)||!newPersonal.birth_date||!newPersonal.phone||!newPersonal.address)return alert('Preencha todos os dados e informe um CPF válido.');
+              const birthDate=new Date(newPersonal.birth_date+'T00:00:00');if(!/^\d{4}-\d{2}-\d{2}$/.test(newPersonal.birth_date)||Number.isNaN(birthDate.getTime())||birthDate.toISOString().slice(0,10)!==newPersonal.birth_date)return alert('Informe uma data de nascimento válida.');if(newPersonal.birth_date>dateToday())return alert('A data de nascimento não pode ser futura.');
+              const halfPrice=half===''?0:Number(half),fullPrice=full===''?0:Number(full);
+              if([halfPrice,fullPrice].some(x=>!Number.isFinite(x)||x<0))return alert('Informe preços válidos (zero é permitido).');
+              const selectedFiles={identity:file('docIdentity'),address:file('docAddressProof'),photo:file('docPhoto')};
+              const validFile=f=>{if(!f)return;if(f.size>8*1024*1024)throw new Error('Cada arquivo deve ter no máximo 8 MB.');if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))throw new Error('Use JPG, PNG, WEBP ou PDF.')};
+              validFile(selectedFiles.identity);validFile(selectedFiles.address);if(selectedFiles.photo){if(!['image/jpeg','image/png','image/webp'].includes(selectedFiles.photo.type))throw new Error('A foto de análise deve ser JPG, PNG ou WEBP.');validFile(selectedFiles.photo)}
+
+              let existing=null,provider=null;
+              if(id){
+               provider=providers.find(x=>x.id===id&&x.user_id===user.id);
+               if(!provider)throw new Error('Você não tem permissão para editar este cadastro.');
+               const q=await db.from('provider_documents').select('*').eq('provider_id',id).maybeSingle();
+               if(q.error)throw q.error;
+               existing=q.data;
+              }
+              if(!existing&&(!selectedFiles.identity||!selectedFiles.address))return alert('No primeiro cadastro, anexe RG/CNH e comprovante de endereço.');
+
+              const personalChanged=!!existing&&(
+               ['legal_name','birth_date','phone','address','experience'].some(k=>String(existing[k]??'')!==String(newPersonal[k]??''))||
+               String(existing.cpf||'').replace(/\D/g,'')!==cpf
+              );
+              const changed=!!(selectedFiles.identity||selectedFiles.address||selectedFiles.photo||personalChanged);
+              const needsReview=!existing||changed||existing.status!=='verified';
+              let pid=id||null;
+
+              if(!id){
+               const created=await db.from('providers').insert({
+                user_id:user.id,name:val('provName'),category:val('provCategory'),area:val('provArea'),
+                half_day_price:halfPrice,full_day_price:fullPrice,about:val('provAbout'),available:false
+               }).select('id').single();
+               if(created.error)throw created.error;
+               pid=created.data.id;createdProviderId=pid;
+              }
+
+              const upload=async(f,kind)=>{
+               if(!f)return null;
+               const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','application/pdf':'pdf'})[f.type];
+               const path=`${user.id}/${pid}/${kind}-${crypto.randomUUID()}.${ext}`;
+               const result=await db.storage.from('provider-documents').upload(path,f,{upsert:false,contentType:f.type});
+               if(result.error)throw result.error;
+               uploadedPaths.push(path);return path;
+              };
+              const identityPath=await upload(selectedFiles.identity,'identity')||existing?.identity_path;
+              const addressPath=await upload(selectedFiles.address,'address')||existing?.address_proof_path;
+              const photoPath=await upload(selectedFiles.photo,'photo')||existing?.photo_path;
+              if(!identityPath||!addressPath)throw new Error('Documentos obrigatórios ausentes.');
+
+              if(id){
+               const updated=await db.from('providers').update({
+                user_id:user.id,name:val('provName'),category:val('provCategory'),area:val('provArea'),
+                half_day_price:halfPrice,full_day_price:fullPrice,about:val('provAbout'),
+                available:needsReview?false:(provider.available??false)
+               }).eq('id',id).eq('user_id',user.id).select('id').single();
+               if(updated.error)throw updated.error;
+               if(needsReview)forceUnavailable=true;
+              }
+
+              const docPayload={
+               provider_id:pid,user_id:user.id,...newPersonal,
+               identity_path:identityPath,address_proof_path:addressPath,photo_path:photoPath,
+               ...(needsReview?{status:'pending',submitted_at:new Date().toISOString()}:{})
+              };
+              const saved=await db.from('provider_documents').upsert(docPayload,{onConflict:'provider_id'});
+              if(saved.error)throw saved.error;
+              keepUploaded=true;
+
+              const oldPaths=existing?[existing.identity_path,existing.address_proof_path,existing.photo_path].filter(Boolean):[];
+              const ownPrefix=`${user.id}/${pid}/`;const replaced=oldPaths.filter(path=>typeof path==='string'&&path.startsWith(ownPrefix)&&![identityPath,addressPath,photoPath].includes(path));
+              if(replaced.length){
+               const removed=await db.storage.from('provider-documents').remove(replaced);
+               if(removed.error)console.warn('Documentos antigos não removidos do armazenamento:',removed.error);
+              }
+              await loadProviders();
+              selectedProviderId=pid;await render();
+              alert(needsReview?'Cadastro enviado. Seus documentos aguardam análise manual. O perfil ficará indisponível até a aprovação.':'Cadastro atualizado.');
+             }catch(e){
+              if(uploadedPaths.length&&!keepUploaded){
+               const cleanup=await db.storage.from('provider-documents').remove(uploadedPaths);
+               if(cleanup.error)console.warn('Falha ao limpar arquivos enviados parcialmente:',cleanup.error);
+              }
+              if(createdProviderId&&!keepUploaded){
+               const rollback=await db.from('providers').delete().eq('id',createdProviderId).eq('user_id',user.id);
+               if(rollback.error)console.warn('Falha ao remover cadastro incompleto:',rollback.error);
+              }
+              if(forceUnavailable&&id){
+               const safe=await db.from('providers').update({available:false}).eq('id',id).eq('user_id',user.id);
+               if(safe.error)console.warn('Não foi possível manter o perfil indisponível:',safe.error);
+              }
+              console.error(e);alert('Não foi possível concluir o cadastro: '+(e.message||e)+'\nConfira as permissões e o bucket privado do Supabase.');
+             }
+            }
+            async function deleteProvider(id){
+             if(!user||!providers.some(p=>p.id===id&&p.user_id===user.id))return alert('Você não tem permissão para desativar este perfil.');
+             if(!confirm('Desativar este perfil profissional? O histórico será preservado.'))return;
+             const{error}=await db.from('providers').update({available:false}).eq('id',id).eq('user_id',user.id);
+             if(error)return alert(error.message);
+             await loadProviders();await loadServices();
+             if(selected===id){selected=null;selectedServiceId=null}
+             await render();alert('Perfil desativado. O histórico foi preservado.');
+            }
+            function serviceForm(pid,s=null){
+             return card(`<h2>${s?'Editar serviço':'Novo serviço'}</h2><input id="svcTitle" placeholder="Nome do serviço" value="${esc(s?.title||'')}"><input id="svcCat" placeholder="Categoria/especialidade" value="${esc(s?.category||'')}"><textarea id="svcDesc" placeholder="Descrição">${esc(s?.description||'')}</textarea><input id="svcPrice" type="number" min="0" step=".01" placeholder="Preço avulso" value="${s?.price??''}"><input id="svcHalf" type="number" min="0" step=".01" placeholder="Meia diária (4h)" value="${s?.half_day_price??''}"><input id="svcFull" type="number" min="0" step=".01" placeholder="Diária completa (8h)" value="${s?.full_day_price??''}"><button class="action" onclick="saveService(${arg(pid)},${arg(s?.id||'')})">Salvar serviço</button><button class="action secondary" onclick="render()">Cancelar</button>`)
+            }
+            function newServiceForm(pid){
+             if(!user||profile?.role!=='prestador'||!providers.some(p=>p.id===pid&&p.user_id===user.id))return alert('Somente o titular de uma conta profissional pode adicionar serviços a este perfil.');
+             const el=$('serviceEditor');
+             if(el){el.innerHTML=serviceForm(pid);el.scrollIntoView({behavior:'smooth'})}
+            }
+            function editServiceForm(id){
+             const s=services.find(x=>x.id===id),el=$('serviceEditor');
+             if(!user||profile?.role!=='prestador'||!s||!el||!providers.some(p=>p.id===s.provider_id&&p.user_id===user.id))return alert('Somente o titular de uma conta profissional pode editar este serviço.');
+             el.innerHTML=serviceForm(s.provider_id,s);el.scrollIntoView({behavior:'smooth'})
+            }
+            async function saveService(pid,id=''){
+             try{
+              if(!user)return alert('Entre na sua conta.');
+              if(profile?.role!=='prestador')return alert('Somente contas profissionais podem cadastrar serviços.');
+              const owned=providers.some(p=>p.id===pid&&p.user_id===user.id);
+              if(!owned)return alert('Você não tem permissão para editar serviços deste profissional.');
+              let v=x=>$(x)?.value?.trim()||'',a=v('svcPrice'),h=v('svcHalf'),f=v('svcFull');
+              const payload={provider_id:pid,title:v('svcTitle'),category:v('svcCat'),description:v('svcDesc'),price:a===''?null:Number(a),half_day_price:h===''?null:Number(h),full_day_price:f===''?null:Number(f),available:true};
+              if(payload.title.length<2||payload.title.length>100)return alert('O nome do serviço deve ter entre 2 e 100 caracteres.');
+              if(payload.category.length<2||payload.category.length>80)return alert('Informe uma categoria válida (2 a 80 caracteres).');
+              if(payload.description.length>1500)return alert('A descrição deve ter no máximo 1.500 caracteres.');
+              if([payload.price,payload.half_day_price,payload.full_day_price].some(x=>x!==null&&(!Number.isFinite(x)||x<=0)))return alert('Preços devem ser números maiores que zero.');
+              if(![payload.price,payload.half_day_price,payload.full_day_price].some(x=>x!==null))return alert('Informe pelo menos um preço.');
+              let q;
+              if(id){
+               const existing=services.find(s=>s.id===id&&s.provider_id===pid);
+               if(!existing)return alert('Serviço não encontrado neste perfil. Atualize a tela e tente novamente.');
+               q=await db.from('services').update(payload).eq('id',id).eq('provider_id',pid).select('id').single();
+              }else{
+               q=await db.from('services').insert(payload).select('id').single();
+              }
+              if(q.error)throw q.error;
+              if(!q.data?.id)throw new Error('O banco não confirmou a gravação do serviço.');
+              await loadServices();await render();alert('Serviço salvo com sucesso!');
+             }catch(e){console.error('Erro ao salvar serviço:',e);alert('Não foi possível salvar o serviço: '+(e.message||e))}
+            }
+            async function toggleProviderAvailability(id){
+             try{
+              if(!user||profile?.role!=='prestador')return alert('Entre em uma conta profissional.');
+              const provider=providers.find(p=>p.id===id&&p.user_id===user.id);
+              if(!provider)return alert('Perfil profissional não encontrado. Atualize a tela.');
+              const nextAvailable=provider.available!==true;
+              if(nextAvailable){
+               const{data:doc,error:docError}=await db.from('provider_documents').select('status').eq('provider_id',id).eq('user_id',user.id).maybeSingle();
+               if(docError)throw docError;
+               if(doc?.status!=='verified')return alert('Seu cadastro ainda aguarda aprovação da documentação pela equipe Chamaê. O perfil só poderá ser ativado após a aprovação.');
+              }
+              const{data,error}=await db.from('providers').update({available:nextAvailable}).eq('id',id).eq('user_id',user.id).select('id,available').single();
+              if(error)throw error;
+              if(!data?.id)throw new Error('O banco não confirmou a alteração da disponibilidade.');
+              await loadProviders();await render();
+              alert(nextAvailable?'Perfil ativado. Você já pode receber solicitações.':'Perfil definido como indisponível.');
+             }catch(e){console.error('Erro ao alterar disponibilidade:',e);alert('Não foi possível alterar a disponibilidade: '+(e.message||e))}
+            }
+            async function deleteService(id){try{const service=services.find(s=>s.id===id);if(!user||profile?.role!=='prestador'||!service||!providers.some(p=>p.id===service.provider_id&&p.user_id===user.id))return alert('Você não tem permissão para desativar este serviço.');if(!confirm('Desativar este serviço? O histórico será preservado.'))return;const{data,error}=await db.from('services').update({available:false}).eq('id',id).eq('provider_id',service.provider_id).select('id').single();if(error)throw error;if(!data?.id)throw new Error('O banco não confirmou a desativação.');await loadServices();await render();alert('Serviço desativado.')}catch(e){console.error('Erro ao desativar serviço:',e);alert('Não foi possível desativar o serviço: '+(e.message||e))}}
+            async function saveProfile(){
+             if(!user)return alert('Entre na sua conta novamente.');
+             const full=$('profileName')?.value.trim()||'',phone=$('profilePhone')?.value.trim()||'';
+             if(full.length<2||full.length>100)return alert('Informe um nome entre 2 e 100 caracteres.');
+             if(phone.length>25)return alert('O telefone deve ter no máximo 25 caracteres.');
+             const{data,error}=await db.from('profiles').update({full_name:full,phone:phone||null}).eq('id',user.id).select().single();
+             if(error)return alert('Não foi possível salvar seu perfil: '+error.message);
+             profile=data;
+             const{error:metaError}=await db.auth.updateUser({data:{full_name:full,phone}});
+             if(metaError)console.warn('Os dados foram salvos no perfil, mas não foi possível atualizar os metadados:',metaError);
+             await render();alert('Perfil atualizado.');
+            }
+            function profileView(){if(!user)return authView();return `<h1>Meu perfil</h1>${card(`<h2>Dados pessoais</h2><label class="sub" for="profileName">Nome completo</label><input id="profileName" maxlength="100" value="${esc(profile?.full_name||user.user_metadata?.full_name||'')}" autocomplete="name"><label class="sub" for="profilePhone">Telefone / WhatsApp</label><input id="profilePhone" type="tel" maxlength="25" value="${esc(profile?.phone||user.user_metadata?.phone||'')}" autocomplete="tel"><label class="sub">E-mail da conta</label><p>${esc(user.email||'')}</p><label class="sub">Tipo de conta</label><p>${esc(profile?.role||'não definido')}</p>${btn('Salvar alterações','saveProfile()')}${btn('Sair da conta','logout()','secondary')}`)}<p class="notice">Seus dados pessoais são usados para identificar sua conta. A alteração do tipo de conta não é feita nesta tela.</p>`}
+            async function render(){
+             const version=++renderVersion,currentTab=tab;
+             const layer=$('screenLayer'),app=$('app');
+             if(recoveryMode){layer.innerHTML='';layer.style.display='none';document.body.classList.remove('screen-open');app.innerHTML=authView();return}
+             const views={home,orders,favorites:favoritesPage,chat:chatView,provider:providerArea,admin:adminView,profile:profileView};
+             let result=await(views[currentTab]||home)();
+             if(version!==renderVersion||currentTab!==tab)return;
+             const useScreenLayer=currentTab==='home'&&!!(selectedCategory||selected);
+             if(useScreenLayer){
+              if(layer.parentElement!==document.body)document.body.appendChild(layer);
+              app.innerHTML='';
+              layer.innerHTML=result;
+              layer.style.setProperty('position','fixed','important');
+              layer.style.setProperty('inset','0','important');
+              layer.style.setProperty('width','100vw','important');
+              layer.style.setProperty('height','100dvh','important');
+              layer.style.setProperty('display','block','important');
+              layer.style.setProperty('z-index','2147483647','important');
+              layer.style.setProperty('overflow','hidden','important');
+              layer.style.setProperty('background','var(--bg)','important');
+              document.body.classList.add('screen-open');
+              document.body.style.setProperty('overflow','hidden');
+              document.body.style.setProperty('height','100dvh');
+             }else{
+              layer.innerHTML='';
+              layer.style.removeProperty('position');layer.style.removeProperty('inset');layer.style.removeProperty('width');layer.style.removeProperty('height');layer.style.removeProperty('z-index');layer.style.removeProperty('overflow');layer.style.removeProperty('background');
+              layer.style.display='none';
+              document.body.classList.remove('screen-open');
+              document.body.style.removeProperty('overflow');document.body.style.removeProperty('height');
+              app.innerHTML=result;
+             }
+             document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+             const adminButton=$('adminTab');if(adminButton)adminButton.style.display=isAdmin?'':'none';
+            }
+            document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',async()=>{const nextTab=b.dataset.tab;if(nextTab==='admin'&&!isAdmin){tab='home';return render()}if(nextTab!=='chat'){await clearChannel(chatRealtime);chatRealtime=null}tab=nextTab;if(tab==='chat'&&(!activeBooking||!canAccessBooking(bookings.find(x=>x.id===activeBooking))))activeBooking=bookings.find(canAccessBooking)?.id||null;if(tab==='chat'&&activeBooking){await loadMessages();await render();await subscribeChat()}else await render()}));
+            db.auth.onAuthStateChange((event,nextSession)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;render()}authQueue=authQueue.then(()=>applyAuthSession(nextSession)).catch(e=>{console.error('Erro ao atualizar autenticação:',e);$('app').innerHTML=notice('Erro ao atualizar sua sessão: '+e.message,'error')})});
+            async function init(){const{data,error}=await db.auth.getSession();if(error)throw error;authQueue=authQueue.then(()=>applyAuthSession(data.session));await authQueue}
+            init().catch(e=>{$('app').innerHTML=notice('Erro ao iniciar o Chamaê: '+e.message,'error')});
+            </script>
+            </body>
+            </html>
