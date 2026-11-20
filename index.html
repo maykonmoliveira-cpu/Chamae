@@ -1,4 +1,4 @@
-   <!doctype html>
+<!doctype html>
             <html lang="pt-BR">
             <head>
             <meta charset="utf-8">
@@ -345,7 +345,7 @@
             function durationLabel(d){return({single:'Serviço avulso',half:'Meia diária · até 4 horas',full:'Diária completa · até 8 horas'})[d]||d||'Modalidade não informada'}
             function timeline(b){return[['Solicitado',b.created_at],['Aceito',b.accepted_at],['Iniciado',b.started_at],['Concluído',b.completed_at],['Cancelado',b.cancelled_at],['Recusado',b.rejected_at]].filter(x=>x[1]).map(x=>`<div class="sub">• ${x[0]}: ${new Date(x[1]).toLocaleString('pt-BR')}</div>`).join('')}
             function canAccessBooking(b){return !!user&&!!b&&(b.client_id===user.id||providers.some(p=>p.id===b.provider_id&&p.user_id===user.id))}
-            function bookingActions(b){let isP=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id),isC=b.client_id===user.id,h='';if(isP&&b.status==='pending')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'accepted')">Aceitar serviço</button><button class="action secondary" onclick="changeStatus(${arg(b.id)},'rejected')">Rejeitar serviço</button>`;if(isP&&b.status==='accepted')h+=`<button class="action orange" onclick="changeStatus(${arg(b.id)},'in_progress')">Iniciar atendimento</button>`;if(isP&&b.status==='in_progress')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'completed')">Concluir atendimento</button>`;if(isC&&['pending','accepted'].includes(b.status))h+=`<button class="action secondary" onclick="changeStatus(${arg(b.id)},'cancelled')">Cancelar solicitação</button>`;return h}
+            function bookingActions(b){let isP=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id),isC=b.client_id===user.id,h='';if(isP&&b.status==='pending')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'accepted')">Aceitar serviço</button><button class="action secondary" onclick="changeStatus(${arg(b.id)},'rejected')">Rejeitar serviço</button>`;if(isP&&b.status==='accepted')h+=`<button class="action orange" onclick="changeStatus(${arg(b.id)},'in_progress')">Iniciar atendimento</button>`;if(isP&&b.status==='in_progress')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'completed')">Finalizar serviço</button>`;if(isC&&['pending','accepted'].includes(b.status))h+=`<button class="action secondary" onclick="changeStatus(${arg(b.id)},'cancelled')">Cancelar solicitação</button>`;return h}
             async function changeStatus(id,status){
              try{
               if(!user)return alert('Entre na sua conta novamente.');
@@ -363,12 +363,19 @@
                if(!provider||provider.available!==true)return alert('Seu perfil profissional está indisponível. Ative-o antes de aceitar solicitações.');
               }
               if(!confirm('Confirmar esta alteração?'))return;
-              const update={status,[fields[status]]:new Date().toISOString()};
-              const{data,error}=await db.from('bookings').update(update).eq('id',id).eq('status',booking.status).select('id,status').maybeSingle();
-              if(error)throw error;
-              if(!data)return alert('A contratação foi alterada por outra ação ou você não tem permissão. Atualize a tela.');
+              let completedByRpc=false;
+              if(status==='completed'){
+               const{error}=await db.rpc('chamae_complete_booking',{p_booking_id:id});
+               if(error)throw error;
+               completedByRpc=true;
+              }else{
+               const update={status,[fields[status]]:new Date().toISOString()};
+               const{data,error}=await db.from('bookings').update(update).eq('id',id).eq('status',booking.status).select('id,status').maybeSingle();
+               if(error)throw error;
+               if(!data)return alert('A contratação foi alterada por outra ação ou você não tem permissão. Atualize a tela.');
+              }
               await loadBookings();await loadNotifications();await loadRated();await render();
-              alert('Status atualizado: '+statusLabel(data.status));
+              alert(completedByRpc?'Serviço encerrado. O contratante foi notificado.':'Status atualizado: '+statusLabel(status));
              }catch(e){console.error('Erro ao atualizar contratação:',e);alert('Não foi possível atualizar a contratação: '+(e.message||e))}
             }
             async function submitRating(id,pid){
