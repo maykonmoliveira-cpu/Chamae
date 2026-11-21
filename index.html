@@ -22,9 +22,13 @@
             button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}input,select,textarea{touch-action:manipulation}.action{width:100%;border:0;border-radius:12px;padding:13px;background:var(--blue);color:white;font-weight:850;margin-top:9px}
             .secondary{background:#EAF1FA;color:var(--blue)}.orange{background:var(--orange);color:white}.danger{background:#FEECEB;color:var(--red)}
             .link{border:0;background:none;color:var(--orange);font-weight:800;padding:8px 2px}
-            nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:flex-start;gap:2px;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:5;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-            nav::-webkit-scrollbar{display:none}
-            nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weight:850;padding:8px 9px;white-space:nowrap;flex:0 0 auto;min-height:40px}nav button.active{color:var(--blue);background:#EDF4FF;border-radius:10px}
+            nav.top-navigation{position:sticky;top:0;left:auto;right:auto;bottom:auto;width:100%;background:#fff;border-top:0;border-bottom:1px solid var(--line);display:flex;justify-content:flex-start;align-items:stretch;gap:5px;padding:7px 8px;z-index:10;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;box-shadow:0 2px 7px #0000000a}
+            nav.top-navigation::-webkit-scrollbar{display:none}
+            nav.top-navigation button{border:0;background:none;color:var(--muted);font-size:10px;font-weight:850;padding:7px 10px;white-space:nowrap;flex:0 0 auto;min-height:48px;min-width:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:11px}
+            nav.top-navigation button .nav-icon{font-size:19px;line-height:21px}
+            nav.top-navigation button.active{color:var(--blue);background:#EDF4FF}
+            nav.top-navigation .chamae-notification-badge{position:absolute;top:2px;margin-left:28px}
+            main{padding-top:14px;padding-bottom:32px}
             button:disabled{opacity:.48;cursor:not-allowed}
             .small{font-size:10px;color:#8794A5;text-align:center;background:white;padding:5px 0 8px}
             .tag{display:inline-block;border-radius:20px;background:#EDF4FF;color:var(--blue);padding:5px 9px;font-size:11px;font-weight:800}
@@ -57,11 +61,17 @@
             </head>
             <body>
             <header><div class="logo">chama<span>ê</span></div><div class="city">JOINVILLE • SC</div></header>
+            <nav aria-label="Navegação principal" class="top-navigation">
+            <button data-tab="home" class="active"><span class="nav-icon" aria-hidden="true">🏠</span><span>Início</span></button>
+            <button data-tab="orders"><span class="nav-icon" aria-hidden="true">📋</span><span>Serviços</span></button>
+            <button data-tab="favorites"><span class="nav-icon" aria-hidden="true">⭐</span><span>Favoritos</span></button>
+            <button data-tab="chat"><span class="nav-icon" aria-hidden="true">💬</span><span>Chat</span></button>
+            <button data-tab="provider"><span class="nav-icon" aria-hidden="true">🧰</span><span>Profissional</span></button>
+            <button data-tab="admin" id="adminTab" style="display:none"><span class="nav-icon" aria-hidden="true">⚙️</span><span>Administração</span></button>
+            <button data-tab="profile"><span class="nav-icon" aria-hidden="true">👤</span><span>Perfil</span></button>
+            </nav>
             <main id="app"><p>Carregando Chamaê...</p></main>
             <div id="screenLayer" aria-live="polite"></div>
-            <nav aria-label="Navegação principal">
-            <button data-tab="home" class="active">Início</button><button data-tab="orders">Serviços</button><button data-tab="favorites">Favoritos</button><button data-tab="chat">Chat</button><button data-tab="provider">Área profissional</button><button data-tab="admin" id="adminTab" style="display:none">Administração</button><button data-tab="profile">Perfil</button>
-            </nav>
             <div class="small">Chamaê • painel administrativo integrado</div>
             <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
             <script>
