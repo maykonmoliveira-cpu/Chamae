@@ -1,4 +1,4 @@
-    <!doctype html>
+<!doctype html>
             <html lang="pt-BR">
             <head>
             <meta charset="utf-8">
@@ -12,7 +12,7 @@
             *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172B45}
             header{background:#fff;padding:13px 17px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:4;box-shadow:0 1px 5px #0001}
             .logo{font-size:27px;font-weight:950;color:var(--blue);letter-spacing:-1px}.logo span{color:var(--orange)}.city{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--muted)}
-            main{padding:17px 15px 36px;max-width:720px;margin:auto}h1{font-size:24px;margin:8px 0 4px;font-weight:900}h2{font-size:17px;margin:20px 0 8px}
+            main{padding:17px 15px 110px;max-width:720px;margin:auto}h1{font-size:24px;margin:8px 0 4px;font-weight:900}h2{font-size:17px;margin:20px 0 8px}
             .sub{font-size:13px;color:var(--muted);line-height:1.5;margin:5px 0 12px}
             input,select,textarea{width:100%;padding:13px;border:1px solid #DCE4EF;border-radius:12px;font-size:16px;background:white;margin:7px 0;color:#172B45}
             textarea{min-height:78px}.card{background:white;border:1px solid var(--line);border-radius:17px;padding:15px;margin:12px 0}
@@ -22,12 +22,9 @@
             button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}input,select,textarea{touch-action:manipulation}.action{width:100%;border:0;border-radius:12px;padding:13px;background:var(--blue);color:white;font-weight:850;margin-top:9px}
             .secondary{background:#EAF1FA;color:var(--blue)}.orange{background:var(--orange);color:white}.danger{background:#FEECEB;color:var(--red)}
             .link{border:0;background:none;color:var(--orange);font-weight:800;padding:8px 2px}
-            nav{position:sticky;top:53px;left:0;right:0;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;justify-content:flex-start;gap:5px;padding:7px 9px;z-index:5;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;box-shadow:0 5px 14px #172b4510}
+            nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:flex-start;gap:2px;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:5;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
             nav::-webkit-scrollbar{display:none}
-            nav button{border:1px solid transparent;background:transparent;color:var(--muted);font-size:10px;font-weight:850;padding:6px 10px;white-space:nowrap;flex:0 0 auto;min-width:66px;min-height:54px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:background .18s ease,border-color .18s ease,transform .18s ease}
-            nav button .nav-icon{font-size:21px;line-height:1.1;filter:drop-shadow(0 2px 2px #172b4520)}
-            nav button.active{color:var(--blue);background:linear-gradient(145deg,#EDF4FF,#fff);border-color:#C9DAF2;box-shadow:0 3px 9px #124b9118;transform:translateY(-1px)}
-            nav button.active .nav-icon{transform:scale(1.08)}
+            nav button{border:0;background:none;color:var(--muted);font-size:10px;font-weight:850;padding:8px 9px;white-space:nowrap;flex:0 0 auto;min-height:40px}nav button.active{color:var(--blue);background:#EDF4FF;border-radius:10px}
             button:disabled{opacity:.48;cursor:not-allowed}
             .small{font-size:10px;color:#8794A5;text-align:center;background:white;padding:5px 0 8px}
             .tag{display:inline-block;border-radius:20px;background:#EDF4FF;color:var(--blue);padding:5px 9px;font-size:11px;font-weight:800}
@@ -51,22 +48,20 @@
             .full-screen-content{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:12px 15px 28px;max-width:760px;width:100%;margin:0 auto;-webkit-overflow-scrolling:touch}
             .full-screen-content .card{margin-top:8px}
 
-            @media(min-width:900px){main{max-width:1080px;padding:28px 28px 36px}nav{justify-content:center;gap:12px}nav button{font-size:12px;padding:8px 18px;min-width:100px}.card{padding:20px}}
-            </style>
+            @media(min-width:900px){main{max-width:1080px;padding:28px 28px 110px}nav{justify-content:center;gap:30px}nav button{font-size:13px;padding:10px 14px}.card{padding:20px}}
+            
+.chamae-notification-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:5px;border-radius:99px;background:#e65b35;color:#fff;font-size:11px;font-weight:800;line-height:18px}
+.notification-row{cursor:pointer}
+.notification-row:focus{outline:2px solid var(--primary,#2463a6);outline-offset:2px}
+</style>
             </head>
             <body>
             <header><div class="logo">chama<span>ê</span></div><div class="city">JOINVILLE • SC</div></header>
-            <nav aria-label="Navegação principal">
-            <button data-tab="home" class="active"><span class="nav-icon" aria-hidden="true">🏠</span><span>Início</span></button>
-            <button data-tab="orders"><span class="nav-icon" aria-hidden="true">🧾</span><span>Serviços</span></button>
-            <button data-tab="favorites"><span class="nav-icon" aria-hidden="true">💎</span><span>Favoritos</span></button>
-            <button data-tab="chat"><span class="nav-icon" aria-hidden="true">💬</span><span>Chat</span></button>
-            <button data-tab="provider"><span class="nav-icon" aria-hidden="true">🧰</span><span>Cadastro de serviços</span></button>
-            <button data-tab="admin" id="adminTab" style="display:none"><span class="nav-icon" aria-hidden="true">🛡️</span><span>Administração</span></button>
-            <button data-tab="profile"><span class="nav-icon" aria-hidden="true">👤</span><span>Perfil</span></button>
-            </nav>
             <main id="app"><p>Carregando Chamaê...</p></main>
             <div id="screenLayer" aria-live="polite"></div>
+            <nav aria-label="Navegação principal">
+            <button data-tab="home" class="active">Início</button><button data-tab="orders">Serviços</button><button data-tab="favorites">Favoritos</button><button data-tab="chat">Chat</button><button data-tab="provider">Área profissional</button><button data-tab="admin" id="adminTab" style="display:none">Administração</button><button data-tab="profile">Perfil</button>
+            </nav>
             <div class="small">Chamaê • painel administrativo integrado</div>
             <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
             <script>
@@ -83,7 +78,7 @@
             let chatRealtime=null,bookingRealtime=null,notificationRealtime=null;
             let renderVersion=0,bookingsLoadError='',chatLoadError='',notificationLoadError='';
             let searchRenderTimer=null;
-            let isAdmin=false,adminDocuments=[],adminHistory=[];
+            let isAdmin=false;
             const BASE_CATEGORIES=['Diarista','Manicure','Eletricista','Encanador','Babá','Cuidador de idosos','Personal trainer','Professor de música','Professor de idiomas','Pedreiro','Jardineiro','Serviços gerais','Multi serviços','Pintor','Mecânico','Marceneiro','Fotógrafo','Professor particular','Cuidador de pets'];
             function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
             function validCPF(value){let c=String(value||'').replace(/\D/g,'');if(c.length!==11||/^(\d)\1{10}$/.test(c))return false;let calc=(base,factor)=>{let sum=0;for(let n of base)sum+=Number(n)*factor--;let r=(sum*10)%11;return r===10?0:r};return calc(c.slice(0,9),10)===Number(c[9])&&calc(c.slice(0,10),11)===Number(c[10])}
@@ -119,81 +114,20 @@
             async function isVerified(id){let{data,error}=await db.from('provider_verifications').select('status').eq('provider_id',id).eq('status','verified').maybeSingle();return!error&&data?.status==='verified'}
             async function verifiedProviders(list){const checks=await Promise.all(list.map(async p=>({provider:p,verified:await isVerified(p.id)})));return checks.filter(x=>x.verified).map(x=>({...x.provider,_verified:true}))}
             async function checkAdmin(){isAdmin=false;if(!user)return false;const{data,error}=await db.rpc('chamae_is_admin');if(error){console.warn('Falha ao verificar acesso administrativo:',error);return false}isAdmin=data===true;return isAdmin}
-            async function loadAdminData(){
-             if(!user||!isAdmin)throw new Error('Acesso administrativo não autorizado.');
-             const fields='provider_id,user_id,status,submitted_at,legal_name,cpf,birth_date,phone,address,experience,identity_path,address_proof_path,photo_path';
-             const{data,error}=await db.from('provider_documents').select(fields).eq('status','pending').order('submitted_at',{ascending:false});
-             if(error)throw error;
-             adminDocuments=data||[];
-             const{data:history,error:historyError}=await db.from('chamae_document_reviews').select('provider_id,decision,created_at,reason').order('created_at',{ascending:false}).limit(50);
-             if(historyError)throw historyError;
-             adminHistory=history||[];
-            }
             async function adminView(){
-             if(!user)return `<h1>Administração</h1>${notice('Entre em uma conta autorizada.','error')}`;
-             try{
-              const authorized=await checkAdmin();
-              if(!authorized)return `<h1>Administração</h1>${notice('Acesso administrativo não autorizado.','error')}`;
-              await loadAdminData();
-              let html=`<h1>Painel administrativo</h1><p class="sub">Análise manual dos documentos dos profissionais.</p><div class="between"><span class="tag">${adminDocuments.length} cadastro(s) aguardando análise</span><button class="link" onclick="render()">Atualizar</button></div>`;
-              if(!adminDocuments.length)html+=card('<p class="sub">Não existem documentos aguardando análise.</p>');
-              for(const d of adminDocuments){
-               const p=providers.find(x=>x.id===d.provider_id),cpf=String(d.cpf||'').replace(/\D/g,'');
-               const masked=cpf.length===11?cpf.slice(0,3)+'.***.***-'+cpf.slice(-2):'Não informado';
-               let links='';
-               for(const[label,path]of[['Documento de identidade',d.identity_path],['Comprovante de endereço',d.address_proof_path],['Foto para análise',d.photo_path]]){
-                if(!path)continue;
-                const expectedPrefix=`${d.user_id}/${d.provider_id}/`;
-                if(!d.user_id||!String(path).startsWith(expectedPrefix)){links+=`<p class="sub">${label}: caminho de arquivo inválido</p>`;continue}
-                const{data,error}=await db.storage.from('provider-documents').createSignedUrl(path,120);
-                let safeSignedUrl='';
-                if(!error&&data?.signedUrl){
-                 try{
-                  const parsed=new URL(data.signedUrl);
-                  const expectedOrigin=new URL(SUPABASE_URL).origin;
-                  if(parsed.protocol==='https:'&&parsed.origin===expectedOrigin)safeSignedUrl=parsed.href;
-                 }catch(urlError){console.warn('URL temporária de documento inválida:',urlError)}
-                }
-                links+=!safeSignedUrl?`<p class="sub">${label}: arquivo indisponível</p>`:`<p><a href="${esc(safeSignedUrl)}" target="_blank" rel="noopener noreferrer">${label} — visualizar</a></p>`;
-               }
-               html+=card(`<div class="between"><b>${esc(p?.name||d.legal_name||'Profissional')}</b><span class="tag">Pendente</span></div><p class="sub">${esc(p?.category||'')} · ${esc(p?.area||'')}</p><div class="service-row"><b>Dados para conferência</b><p class="sub">Nome: ${esc(d.legal_name||'')}</p><p class="sub">CPF: ${esc(masked)}</p><p class="sub">Nascimento: ${esc(d.birth_date||'')}</p><p class="sub">Telefone: ${esc(d.phone||'')}</p><p class="sub">Endereço: ${esc(d.address||'')}</p><p class="sub">Experiência: ${esc(d.experience||'Não informada')}</p></div><h3>Documentos privados</h3>${links}<textarea id="adminReason-${esc(d.provider_id)}" placeholder="Justificativa (obrigatória para rejeitar)"></textarea><button class="action" onclick="reviewDocument(${arg(d.provider_id)},'verified')">Aprovar documentação</button><button class="action danger" onclick="reviewDocument(${arg(d.provider_id)},'rejected')">Rejeitar documentação</button>`);
-              }
-              html+='<h2>Histórico de análises</h2>';
-              html+=adminHistory.map(h=>card(`<div class="between"><b>${h.decision==='verified'?'Aprovado':'Rejeitado'}</b><span class="sub">${h.created_at?new Date(h.created_at).toLocaleString('pt-BR'):''}</span></div><p class="sub">Profissional: ${esc(h.provider_id)}</p><p class="sub">Justificativa: ${esc(h.reason||'Não informada')}</p>`)).join('')||card('<p class="sub">Nenhuma análise registrada.</p>');
-              return html;
-             }catch(e){console.error(e);return `<h1>Painel administrativo</h1>${notice('Erro ao carregar dados administrativos: '+e.message,'error')}`}
-            }
-            const reviewingProviders=new Set();
-            async function reviewDocument(providerId,decision){
-             if(!user)return alert('Entre novamente para continuar.');
-             if(!['verified','rejected'].includes(decision))return alert('Decisão de análise inválida.');
-             if(reviewingProviders.has(providerId))return alert('Esta análise já está sendo processada.');
-             if(!adminDocuments.some(d=>d.provider_id===providerId&&d.status==='pending'))return alert('Este cadastro não está mais aguardando análise. Atualize o painel.');
-             const reason=$('adminReason-'+providerId)?.value.trim()||'';
-             if(decision==='rejected'&&!reason)return alert('Informe a justificativa da rejeição.');
-             if(reason.length>1000)return alert('A justificativa deve ter no máximo 1.000 caracteres.');
-             if(!confirm(`Confirma ${decision==='verified'?'aprovar':'rejeitar'} esta documentação?`))return;
-             reviewingProviders.add(providerId);
-             try{
-              const authorized=await checkAdmin();
-              if(!authorized)throw new Error('Sua conta não possui autorização administrativa.');
-              const{data:pending,error:pendingError}=await db.from('provider_documents').select('provider_id').eq('provider_id',providerId).eq('status','pending').maybeSingle();
-              if(pendingError)throw pendingError;
-              if(!pending?.provider_id)throw new Error('Este cadastro não está mais pendente. Atualize o painel.');
-              const{error}=await db.rpc('chamae_review_provider_document',{p_provider_id:providerId,p_decision:decision,p_reason:reason||null});
-              if(error)throw error;
-              await loadProviders();
-              await loadAdminData();
-              await render();
-              alert(decision==='verified'?'Documentação aprovada.':'Documentação rejeitada e justificativa registrada.');
-             }catch(e){
-              console.error('Falha ao revisar documentação:',e);
-              alert('Não foi possível concluir a análise: '+(e.message||'Falha inesperada.'));
-             }finally{
-              reviewingProviders.delete(providerId);
-             }
-            }
-            function authView(){if(recoveryMode)return '<h1>Redefinir senha</h1><p class="sub">Escolha uma nova senha para sua conta.</p>'+card(`<input id="recoveryPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Nova senha (mínimo 6 caracteres)">${btn('Salvar nova senha','updateRecoveredPassword()')}`);return `<h1>Bem-vindo ao Chamaê</h1><p class="sub">Entre ou crie sua conta para contratar serviços ou oferecer seu trabalho.</p>${card(`<h2>Entrar</h2><input id="loginEmail" type="email" autocomplete="username" placeholder="Seu e-mail"><input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha">${btn('Entrar','login()')}<button class="link" type="button" onclick="forgotPassword()">Esqueci minha senha</button><hr><h2>Criar conta</h2><input id="newName" placeholder="Nome completo"><input id="newPhone" placeholder="Telefone / WhatsApp"><input id="newEmail" type="email" autocomplete="email" placeholder="E-mail"><input id="newPass" type="password" autocomplete="new-password" minlength="6" placeholder="Senha (mínimo 6 caracteres)"><select id="newRole"><option value="cliente">Quero contratar serviços</option><option value="prestador">Quero oferecer serviços</option></select>${btn('Criar minha conta','signup()','orange')}<p class="sub">A confirmação de cadastro segue a configuração do Supabase Auth.</p>`)}`}            async function login(){
+ if(!user)return `<h1>Administração</h1>${notice('Entre em uma conta autorizada.','error')}`;
+ const authorized=await checkAdmin();
+ if(!authorized)return `<h1>Administração</h1>${notice('Acesso administrativo não autorizado.','error')}`;
+ return `<h1>Painel administrativo</h1>
+ ${card(`<h2>Verificação automática de profissionais</h2>
+ <p class="sub">A aprovação manual de documentos foi desativada nesta interface. O Supabase executa a validação automática e sincroniza o estado do cadastro.</p>
+ <p class="notice">A validação automática verifica consistência dos dados e disponibilidade dos arquivos. Ela não comprova, por si só, a autenticidade material do documento nem realiza biometria.</p>
+ <button class="link" onclick="render()">Atualizar painel</button>`)}`;
+}
+async function reviewDocument(){
+ alert('A aprovação manual de documentos está desativada. A verificação é realizada automaticamente pelo Supabase.');
+}
+function authView(){if(recoveryMode)return '<h1>Redefinir senha</h1><p class="sub">Escolha uma nova senha para sua conta.</p>'+card(`<input id="recoveryPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Nova senha (mínimo 6 caracteres)">${btn('Salvar nova senha','updateRecoveredPassword()')}`);return `<h1>Bem-vindo ao Chamaê</h1><p class="sub">Entre ou crie sua conta para contratar serviços ou oferecer seu trabalho.</p>${card(`<h2>Entrar</h2><input id="loginEmail" type="email" autocomplete="username" placeholder="Seu e-mail"><input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha">${btn('Entrar','login()')}<button class="link" type="button" onclick="forgotPassword()">Esqueci minha senha</button><hr><h2>Criar conta</h2><input id="newName" placeholder="Nome completo"><input id="newPhone" placeholder="Telefone / WhatsApp"><input id="newEmail" type="email" autocomplete="email" placeholder="E-mail"><input id="newPass" type="password" autocomplete="new-password" minlength="6" placeholder="Senha (mínimo 6 caracteres)"><select id="newRole"><option value="cliente">Quero contratar serviços</option><option value="prestador">Quero oferecer serviços</option></select>${btn('Criar minha conta','signup()','orange')}<p class="sub">A confirmação de cadastro segue a configuração do Supabase Auth.</p>`)}`}            async function login(){
              const email=$('loginEmail')?.value.trim(),password=$('loginPass')?.value;
              if(!email||!password)return alert('Informe e-mail e senha.');
              const{data,error}=await db.auth.signInWithPassword({email,password});
@@ -245,7 +179,7 @@
               }catch(e){console.error('Falha ao carregar sessão do usuário:',e);if(generation===authGeneration)bookingsLoadError=e.message||'Não foi possível carregar os dados da conta.'}
              }else{
               await clearRealtime();
-              adminDocuments=[];adminHistory=[];
+              
               providers=[];services=[];bookings=[];messages=[];notifications=[];notificationLoadError='';chatLoadError='';
               ratedBookingIds=[];loyaltyBonuses=[];loyaltyProgress={};
               activeBooking=null;selected=null;selectedServiceId=null;selectedCategory=null;
@@ -345,7 +279,7 @@
             function durationLabel(d){return({single:'Serviço avulso',half:'Meia diária · até 4 horas',full:'Diária completa · até 8 horas'})[d]||d||'Modalidade não informada'}
             function timeline(b){return[['Solicitado',b.created_at],['Aceito',b.accepted_at],['Iniciado',b.started_at],['Concluído',b.completed_at],['Cancelado',b.cancelled_at],['Recusado',b.rejected_at]].filter(x=>x[1]).map(x=>`<div class="sub">• ${x[0]}: ${new Date(x[1]).toLocaleString('pt-BR')}</div>`).join('')}
             function canAccessBooking(b){return !!user&&!!b&&(b.client_id===user.id||providers.some(p=>p.id===b.provider_id&&p.user_id===user.id))}
-            function bookingActions(b){let isP=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id),isC=b.client_id===user.id,h='';if(isP&&b.status==='pending')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'accepted')">Aceitar serviço</button><button class="action secondary" onclick="changeStatus(${arg(b.id)},'rejected')">Rejeitar serviço</button>`;if(isP&&b.status==='accepted')h+=`<button class="action orange" onclick="changeStatus(${arg(b.id)},'in_progress')">Iniciar atendimento</button>`;if(isP&&b.status==='in_progress')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'completed')">Finalizar serviço</button>`;if(isC&&['pending','accepted'].includes(b.status))h+=`<button class="action secondary" onclick="changeStatus(${arg(b.id)},'cancelled')">Cancelar solicitação</button>`;return h}
+            function bookingActions(b){let isP=providers.some(p=>p.id===b.provider_id&&p.user_id===user.id),isC=b.client_id===user.id,h='';if(isP&&b.status==='pending')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'accepted')">Aceitar serviço</button><button class="action secondary" onclick="changeStatus(${arg(b.id)},'rejected')">Rejeitar serviço</button>`;if(isP&&b.status==='accepted')h+=`<button class="action orange" onclick="changeStatus(${arg(b.id)},'in_progress')">Iniciar atendimento</button>`;if(isP&&b.status==='in_progress')h+=`<button class="action" onclick="changeStatus(${arg(b.id)},'completed')">Concluir atendimento</button>`;if(isC&&['pending','accepted'].includes(b.status))h+=`<button class="action secondary" onclick="changeStatus(${arg(b.id)},'cancelled')">Cancelar solicitação</button>`;return h}
             async function changeStatus(id,status){
              try{
               if(!user)return alert('Entre na sua conta novamente.');
@@ -363,19 +297,12 @@
                if(!provider||provider.available!==true)return alert('Seu perfil profissional está indisponível. Ative-o antes de aceitar solicitações.');
               }
               if(!confirm('Confirmar esta alteração?'))return;
-              let completedByRpc=false;
-              if(status==='completed'){
-               const{error}=await db.rpc('chamae_complete_booking',{p_booking_id:id});
-               if(error)throw error;
-               completedByRpc=true;
-              }else{
-               const update={status,[fields[status]]:new Date().toISOString()};
-               const{data,error}=await db.from('bookings').update(update).eq('id',id).eq('status',booking.status).select('id,status').maybeSingle();
-               if(error)throw error;
-               if(!data)return alert('A contratação foi alterada por outra ação ou você não tem permissão. Atualize a tela.');
-              }
+              const update={status,[fields[status]]:new Date().toISOString()};
+              const{data,error}=await db.from('bookings').update(update).eq('id',id).eq('status',booking.status).select('id,status').maybeSingle();
+              if(error)throw error;
+              if(!data)return alert('A contratação foi alterada por outra ação ou você não tem permissão. Atualize a tela.');
               await loadBookings();await loadNotifications();await loadRated();await render();
-              alert(completedByRpc?'Serviço encerrado. O contratante foi notificado.':'Status atualizado: '+statusLabel(status));
+              alert('Status atualizado: '+statusLabel(data.status));
              }catch(e){console.error('Erro ao atualizar contratação:',e);alert('Não foi possível atualizar a contratação: '+(e.message||e))}
             }
             async function submitRating(id,pid){
@@ -396,40 +323,49 @@
               alert('Avaliação enviada. Obrigado!');
              }catch(e){console.error('Erro ao enviar avaliação:',e);alert('Não foi possível enviar a avaliação: '+(e.message||e))}
             }
-            function notificationsView(){let unread=notifications.filter(n=>!n.read_at).length;return card(`<div class="between"><h2>Notificações</h2><span class="tag">${unread} não lida(s)</span></div>${notificationLoadError?notice(notificationLoadError,'error'):''}${notifications.map(n=>`<div class="service-row"><b>${esc(n.title)}</b><p class="sub">${esc(n.body)}</p>${!n.read_at?`<button class="link" onclick="markRead(${arg(n.id)})">Marcar como lida</button>`:''}</div>`).join('')||'<p class="sub">Nenhuma notificação.</p>'}`)}
-            async function markRead(id){
-             try{
-              if(!user)return alert('Entre na sua conta novamente.');
-              const{data,error}=await db.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id).eq('recipient_id',user.id).is('read_at',null).select('id').maybeSingle();
-              if(error)throw error;
-              if(!data)return;
-              await loadNotifications();await render();
-             }catch(e){console.error('Erro ao marcar notificação:',e);alert('Não foi possível atualizar a notificação: '+(e.message||e))}
-            }
-            function orders(){if(!user)return authView();return `<h1>Meus serviços</h1><p class="sub">Acompanhe solicitações, horários e avaliações.</p>${bookingsLoadError?notice('Não foi possível carregar suas contratações: '+bookingsLoadError,'error'):''}${notificationsView()}${bookings.map(b=>card(`<div class="between"><b>${esc(b.service_category)} · ${esc(b.provider_name)}</b><span class="tag">${esc(statusLabel(b.status))}</span></div><p class="sub">${esc(durationLabel(b.duration))} · ${esc(b.service_date||'')} ${esc(String(b.service_time||'').slice(0,5))}</p><p class="sub">${esc(b.notes||'Sem observações.')}</p>${timeline(b)}<b class="price">${money(b.total_amount)}</b><button class="link" onclick="openChat(${arg(b.id)})">Abrir chat ›</button>${bookingActions(b)}${b.client_id===user.id&&b.status==='completed'&&!ratedBookingIds.includes(b.id)?`<label class="sub">Avalie este serviço</label><select id="rating-${b.id}"><option value="5">5 estrelas</option><option value="4">4 estrelas</option><option value="3">3 estrelas</option><option value="2">2 estrelas</option><option value="1">1 estrela</option></select><input id="comment-${b.id}" placeholder="Comentário (opcional)"><button class="action secondary" onclick="submitRating(${arg(b.id)},${arg(b.provider_id)})">Enviar avaliação</button>`:''}`)).join('')||card('<p class="sub">Você ainda não possui solicitações.</p>')}`}
+            function notificationsView(){
+ const unread=notifications.filter(n=>!n.read_at).length;
+ return card(`<div class="between"><h2>Notificações</h2><span class="tag">${unread} não lida(s)</span></div>
+ ${notificationLoadError?notice(notificationLoadError,'error'):''}
+ ${notifications.map(n=>`<div class="service-row notification-row" role="button" tabindex="0" onclick="openNotification(${arg(n.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openNotification(${arg(n.id)})}">
+ <b>${esc(n.title)}</b><p class="sub">${esc(n.body)}</p>
+ <small class="sub">${new Date(n.created_at).toLocaleString('pt-BR')}</small>
+ <p class="sub">${n.read_at?'Lida':'Toque para abrir a contratação relacionada'}</p>
+ </div>`).join('')||'<p class="sub">Nenhuma notificação.</p>'}`)}
+async function markRead(id){
+ if(!user)return;
+ const {error}=await db.from('notifications').update({read_at:new Date().toISOString()})
+  .eq('id',id).eq('recipient_id',user.id).is('read_at',null);
+ if(error)throw error;
+ await loadNotifications();
+}
+async function openNotification(id){
+ try{
+  if(!user)return alert('Entre na sua conta novamente.');
+  const n=notifications.find(x=>x.id===id&&x.recipient_id===user.id);
+  if(!n)return alert('Esta notificação não está disponível para sua conta.');
+  if(!n.read_at)await markRead(id);
+  if(!n.booking_id){await render();return}
+  let booking=bookings.find(x=>x.id===n.booking_id);
+  if(!booking){await loadBookings();booking=bookings.find(x=>x.id===n.booking_id)}
+  if(!booking||!canAccessBooking(booking)){
+   await render();
+   return alert('A contratação relacionada não está disponível para esta conta.');
+  }
+  activeBooking=booking.id;
+  tab='orders';
+  await render();
+  requestAnimationFrame(()=>{
+   const target=document.getElementById('booking-'+CSS.escape(String(booking.id)));
+   if(target)target.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+ }catch(e){console.error('Erro ao abrir notificação:',e);alert('Não foi possível abrir a notificação: '+(e.message||e))}
+}
+function orders(){if(!user)return authView();return `<h1>Meus serviços</h1><p class="sub">Acompanhe solicitações, horários e avaliações.</p>${bookingsLoadError?notice('Não foi possível carregar suas contratações: '+bookingsLoadError,'error'):''}${notificationsView()}${bookings.map(b=>card(`<div class="between" id="booking-${esc(b.id)}"><b>${esc(b.service_category)} · ${esc(b.provider_name)}</b><span class="tag">${esc(statusLabel(b.status))}</span></div><p class="sub">${esc(durationLabel(b.duration))} · ${esc(b.service_date||'')} ${esc(String(b.service_time||'').slice(0,5))}</p><p class="sub">${esc(b.notes||'Sem observações.')}</p>${timeline(b)}<b class="price">${money(b.total_amount)}</b><button class="link" onclick="openChat(${arg(b.id)})">Abrir chat ›</button>${bookingActions(b)}${b.client_id===user.id&&b.status==='completed'&&!ratedBookingIds.includes(b.id)?`<label class="sub">Avalie este serviço</label><select id="rating-${b.id}"><option value="5">5 estrelas</option><option value="4">4 estrelas</option><option value="3">3 estrelas</option><option value="2">2 estrelas</option><option value="1">1 estrela</option></select><input id="comment-${b.id}" placeholder="Comentário (opcional)"><button class="action secondary" onclick="submitRating(${arg(b.id)},${arg(b.provider_id)})">Enviar avaliação</button>`:''}`)).join('')||card('<p class="sub">Você ainda não possui solicitações.</p>')}`}
             async function favoritesPage(){if(!user)return authView();let list=await verifiedProviders(providers.filter(p=>favorites.includes(p.id)&&p.available===true));return `<h1>Favoritos</h1><p class="sub">Salvos neste aparelho.</p>${list.map(p=>card(`<b>${esc(p.name)}</b><p class="sub">${esc(p.category)} · ${esc(p.area||'')}</p><button class="link" onclick="toggleFavorite(${arg(p.id)})">Remover</button><button class="link" onclick="selectProvider(${arg(p.id)});tab='home';render()">Ver perfil ›</button>`)).join('')||card('<p class="sub">Nenhum profissional favorito está disponível e verificado no momento.</p>')}`}
             async function openChat(id){const booking=bookings.find(b=>b.id===id);if(!canAccessBooking(booking))return alert('Você não tem acesso ao chat desta contratação.');activeBooking=id;tab='chat';await loadMessages();await render();subscribeChat()}
             async function loadMessages(){if(!activeBooking){messages=[];return}const booking=bookings.find(b=>b.id===activeBooking);if(!canAccessBooking(booking)){messages=[];return}let{data,error}=await db.from('messages').select('*').eq('booking_id',activeBooking).order('created_at');if(error){console.warn('Falha ao carregar mensagens:',error);messages=[];chatLoadError=error.message||'Não foi possível carregar as mensagens.'}else{messages=data||[];chatLoadError=''}}
-            function chatView(){if(!user)return authView();let b=bookings.find(x=>x.id===activeBooking);if(activeBooking&&!canAccessBooking(b))return `<h1>Chat do serviço</h1>${notice('Você não tem acesso a esta conversa. Abra o chat a partir de uma contratação sua.','error')}`;return `<h1>Chat do serviço</h1><p class="sub">${b?esc(b.provider_name)+' · '+esc(b.service_category):'Selecione uma contratação.'}</p>${notice('Por segurança, não compartilhe telefones, WhatsApp, Telegram, e-mails, links, redes sociais nem combine pagamentos por fora. A regra vale para contratantes e profissionais.','notice')}${chatLoadError?notice(chatLoadError,'error'):''}${activeBooking?card(messages.map(m=>`<div class="chat ${m.sender_id===user.id?'mine':''}">${esc(m.body)}</div>`).join('')+`<input id="chatText" maxlength="2000" placeholder="Digite sua mensagem"><button class="action" onclick="sendMessage()">Enviar</button>`):card('<p class="sub">Abra o chat a partir de uma contratação.</p>')}`}
-            // ANTIFRAUDE: bloqueio preventivo de contatos e negociação fora da plataforma.
-            const ANTIFRAUD_MESSAGE='Mensagem bloqueada: o chat do Chamaê não permite compartilhar contatos ou combinar pagamentos por fora. Mantenha a conversa e o pagamento na plataforma.';
-            function detectAntifraudMessage(value=''){
-             const raw=String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-             const compact=raw.replace(/[\s._-]+/g,'');
-             const patterns=[
-              /https?:\/\//i,/www\./i,/\b[a-z0-9._%+-]+\s*@\s*[a-z0-9.-]+\s*\.\s*[a-z]{2,}\b/i,
-              /\b(whats?app|wpp|zapzap|telegram|signal|instagram|insta|facebook|messenger|tiktok|twitter|x\.com|linkedin|rede social|direct|dm)\b/i,
-              /\b(telefone|celular|numero|meu contato|me chama|chama no|me liga|ligar|manda mensagem|passo meu|meu zap|meu whats|arroba|pix por fora|pagar por fora|pagamento por fora|dinheiro por fora|fora do app|fora da plataforma|desconto no particular|combinar direto)\b/i,
-              /\b(com|no|pelo)\s+(zap|whats|wpp|telegram|insta|instagram|direct|pix)\b/i
-             ];
-             if(patterns.some(re=>re.test(raw)))return 'contato_ou_negociacao_externa';
-             const digits=compact.replace(/\D/g,'');
-             if(digits.length>=8&&digits.length<=13)return 'possivel_telefone';
-             // Detecta números separados por palavras/sinais (ex.: 4 nove 8...).
-             const spoken=raw.replace(/zero/g,'0').replace(/um/g,'1').replace(/dois/g,'2').replace(/tres/g,'3').replace(/quatro/g,'4').replace(/cinco/g,'5').replace(/seis/g,'6').replace(/sete/g,'7').replace(/oito/g,'8').replace(/nove/g,'9').replace(/\D/g,'');
-             if(spoken.length>=8&&spoken.length<=13)return 'possivel_telefone_disfarçado';
-             return null;
-            }
+            function chatView(){if(!user)return authView();let b=bookings.find(x=>x.id===activeBooking);if(activeBooking&&!canAccessBooking(b))return `<h1>Chat do serviço</h1>${notice('Você não tem acesso a esta conversa. Abra o chat a partir de uma contratação sua.','error')}`;return `<h1>Chat do serviço</h1><p class="sub">${b?esc(b.provider_name)+' · '+esc(b.service_category):'Selecione uma contratação.'}</p>${chatLoadError?notice(chatLoadError,'error'):''}${activeBooking?card(messages.map(m=>`<div class="chat ${m.sender_id===user.id?'mine':''}">${esc(m.body)}</div>`).join('')+`<input id="chatText" maxlength="2000" placeholder="Digite sua mensagem"><button class="action" onclick="sendMessage()">Enviar</button>`):card('<p class="sub">Abra o chat a partir de uma contratação.</p>')}`}
             async function sendMessage(){
              try{
               if(!user)return alert('Entre na sua conta.');
@@ -437,25 +373,93 @@
               if(!bookingId)return alert('Abra uma contratação para usar o chat.');
               if(!body)return alert('Digite uma mensagem antes de enviar.');
               if(body.length>2000)return alert('A mensagem deve ter no máximo 2.000 caracteres.');
-              if(detectAntifraudMessage(body))return alert(ANTIFRAUD_MESSAGE);
               const booking=bookings.find(b=>b.id===bookingId);
               if(!canAccessBooking(booking))return alert('Você não tem acesso ao chat desta contratação.');
               const{error}=await db.from('messages').insert({booking_id:bookingId,sender_id:user.id,body});
-              if(error){
-               const msg=String(error.message||'');
-               if(/ANTIFRAUD_BLOCK|contato ou pagamento por fora|chamae_antifraud/i.test(msg))return alert(ANTIFRAUD_MESSAGE);
-               throw error;
-              }
+              if(error)throw error;
               await loadMessages();
               if(tab==='chat'&&activeBooking===bookingId)await render();
              }catch(e){console.error('Erro ao enviar mensagem:',e);alert('Não foi possível enviar a mensagem: '+(e.message||e))}
             }
             async function subscribeChat(){await clearChannel(chatRealtime);chatRealtime=null;const id=activeBooking,recipientId=user?.id,booking=bookings.find(b=>b.id===id);if(!id||!recipientId||!canAccessBooking(booking))return;chatRealtime=db.channel('chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'booking_id=eq.'+id},async payload=>{if(!user||user.id!==recipientId||activeBooking!==id||!canAccessBooking(bookings.find(b=>b.id===id)))return;await loadMessages();if(tab==='chat')await render()}).subscribe()}
             async function subscribeBookings(){await clearChannel(bookingRealtime);bookingRealtime=null;if(!user)return;bookingRealtime=db.channel('bookings-'+user.id).on('postgres_changes',{event:'*',schema:'public',table:'bookings'},async()=>{await loadBookings();await loadRated();if(['orders','provider'].includes(tab))render()}).subscribe()}
-            async function subscribeNotifications(){await clearChannel(notificationRealtime);notificationRealtime=null;if(!user)return;const recipientId=user.id;notificationRealtime=db.channel('notifications-'+recipientId).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'recipient_id=eq.'+recipientId},async payload=>{if(!user||user.id!==recipientId)return;await loadNotifications();if(tab==='orders')await render();if(payload.new?.title&&tab!=='orders')console.info('Nova notificação do Chamaê:',payload.new.title)}).subscribe()}
-            function providerArea(){if(!user)return authView();if(profile?.role!=='prestador')return `<h1>Área profissional</h1>${card('<p class="sub">Sua conta está configurada como cliente. Use uma conta de prestador para publicar serviços.</p>')}`;let mine=providers.filter(p=>p.user_id===user.id),current=mine.find(p=>p.id===selectedProviderId)||mine[0]||null;if(current)selectedProviderId=current.id;let html=`<h1>Área profissional</h1><p class="sub">Cadastre vários profissionais e serviços ilimitados.</p>${loyaltyView(mine.map(p=>p.id))}${card(`<h2>Meus profissionais (${mine.length})</h2>${mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId=${arg(p.id)};render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join('')}<button class="action orange" onclick="newProviderForm()">+ Adicionar profissional</button>`)}`;if(current){let list=services.filter(s=>s.provider_id===current.id);html+=card(`<div class="between"><h2>${esc(current.name)}</h2><span class="tag">${current.available?'Ativo':'Inativo'}</span></div><p class="sub">${esc(current.category)} · ${esc(current.area||'')}</p><button class="link" onclick="editProviderForm(${arg(current.id)})">Editar perfil</button><button class="link" onclick="deleteProvider(${arg(current.id)})">Desativar perfil</button><h2>Serviços (${list.length})</h2>${list.map(s=>`<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.category)} · avulso ${money(s.price)} · 4h ${money(s.half_day_price)} · 8h ${money(s.full_day_price)}</p><button class="link" onclick="editServiceForm(${arg(s.id)})">Editar</button><button class="link" onclick="deleteService(${arg(s.id)})">Desativar</button></div>`).join('')}<button class="action" onclick="newServiceForm(${arg(current.id)})">+ Adicionar serviço</button>${bookingsLoadError?notice('Não foi possível carregar as contratações: '+bookingsLoadError,'error'):''}<p class="notice">A documentação será analisada manualmente pela equipe Chamaê. O selo Perfil Verificado só será liberado após aprovação administrativa. O perfil permanecerá indisponível enquanto a análise estiver pendente ou rejeitada.</p>`)}html+='<div id="providerEditor"></div><div id="serviceEditor"></div>';return html}
-            function providerForm(p=null){return card(`<h2>${p?'Editar profissional':'Novo profissional'}</h2><h3>Informações profissionais</h3><input id="provName" placeholder="Nome profissional" value="${esc(p?.name||profile?.full_name||'')}" required><input id="provCategory" list="cats" placeholder="Categoria principal" value="${esc(p?.category||'')}" required><datalist id="cats">${BASE_CATEGORIES.map(c=>`<option value="${esc(c)}">`).join('')}</datalist><input id="provArea" placeholder="Bairro/região" value="${esc(p?.area||'')}" required><textarea id="provAbout" placeholder="Experiência, especialidades e apresentação">${esc(p?.about||'')}</textarea><h3>Dados para verificação (privados)</h3><input id="docLegalName" placeholder="Nome completo conforme documento" autocomplete="name" required><input id="docCPF" inputmode="numeric" placeholder="CPF (somente números)" maxlength="14" required><input id="docBirth" type="date" aria-label="Data de nascimento" required><input id="docPhone" type="tel" placeholder="Telefone / WhatsApp" autocomplete="tel" required><input id="docAddress" placeholder="Endereço completo" autocomplete="street-address" required><input id="docExperience" placeholder="Tempo de experiência (ex.: 3 anos)"><label class="sub">Foto para análise interna (opcional — nunca aparece no perfil público)</label><input id="docPhoto" type="file" accept="image/jpeg,image/png,image/webp"><label class="sub">Documento de identidade — RG ou CNH</label><input id="docIdentity" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><label class="sub">Comprovante de endereço</label><input id="docAddressProof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><p class="notice">Na primeira solicitação, envie RG/CNH e comprovante. Ao editar, os documentos já enviados são mantidos se você não selecionar novos arquivos. A documentação será analisada manualmente pela equipe Chamaê. O perfil ficará indisponível até a aprovação. A foto, se enviada, fica privada e nunca é exibida no perfil público. O acesso aos documentos depende das permissões privadas do Supabase.</p><h3>Preços de referência</h3><input id="provHalf" type="number" min="0" step=".01" placeholder="Preço referência meia diária" value="${p?.half_day_price??''}"><input id="provFull" type="number" min="0" step=".01" placeholder="Preço referência diária completa" value="${p?.full_day_price??''}"><button class="action" onclick="saveProvider(${arg(p?.id||'')})">Enviar cadastro para verificação</button><button class="action secondary" onclick="render()">Cancelar</button>`)}
-            function newProviderForm(){if(!user||profile?.role!=='prestador')return alert('Somente contas profissionais podem cadastrar profissionais.');let el=$('providerEditor');if(el){el.innerHTML=providerForm();el.scrollIntoView({behavior:'smooth'})}}
+            let notificationReconnectTimer=null,notificationRetryCount=0;
+function updateNotificationBadge(){
+ const nav=document.querySelector('nav button[data-tab="orders"]');
+ if(!nav)return;
+ let badge=nav.querySelector('.chamae-notification-badge');
+ const count=notifications.filter(n=>!n.read_at).length;
+ if(!badge){badge=document.createElement('span');badge.className='chamae-notification-badge';nav.appendChild(badge)}
+ badge.textContent=count>99?'99+':String(count);
+ badge.style.display=count?'inline-flex':'none';
+}
+function showNotificationToast(n){
+ if(!n||!document.body)return;
+ let host=document.getElementById('chamaeNotificationToast');
+ if(!host){
+  host=document.createElement('div');host.id='chamaeNotificationToast';
+  host.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:2147483647;display:flex;justify-content:center;pointer-events:none';
+  document.body.appendChild(host);
+ }
+ const toast=document.createElement('button');
+ toast.type='button';
+ toast.style.cssText='pointer-events:auto;width:min(560px,100%);text-align:left;background:#123b70;color:white;border:0;border-radius:14px;padding:14px 16px;box-shadow:0 8px 28px #0005;font:inherit';
+ const title=document.createElement('strong');title.textContent=n.title||'Nova notificação';
+ const body=document.createElement('div');body.textContent=n.body||'Toque para abrir.';
+ body.style.cssText='font-size:13px;margin-top:4px;opacity:.94';
+ const hint=document.createElement('small');hint.textContent='Toque para abrir';hint.style.cssText='display:block;margin-top:7px;opacity:.8';
+ toast.append(title,body,hint);
+ toast.onclick=()=>{host.remove();openNotification(n.id)};
+ host.replaceChildren(toast);
+ clearTimeout(window.chamaeNotificationToastTimer);
+ window.chamaeNotificationToastTimer=setTimeout(()=>host.remove(),9000);
+}
+async function subscribeNotifications(){
+ if(notificationReconnectTimer){clearTimeout(notificationReconnectTimer);notificationReconnectTimer=null}
+ await clearChannel(notificationRealtime);notificationRealtime=null;
+ if(!user)return;
+ const recipientId=user.id;
+ const channel=db.channel('notifications-'+recipientId)
+  .on('postgres_changes',{event:'*',schema:'public',table:'notifications',filter:'recipient_id=eq.'+recipientId},async payload=>{
+   if(!user||user.id!==recipientId)return;
+   await loadNotifications();updateNotificationBadge();
+   if(payload.eventType==='INSERT'&&payload.new?.id)showNotificationToast(payload.new);
+   if(tab==='orders'||tab==='notifications')await render();
+  })
+  .subscribe(status=>{
+   if(status==='SUBSCRIBED'){notificationRetryCount=0;return}
+   if(['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(status)&&user?.id===recipientId){
+    if(notificationReconnectTimer)clearTimeout(notificationReconnectTimer);
+    const delay=Math.min(30000,2000*Math.pow(2,notificationRetryCount++));
+    notificationReconnectTimer=setTimeout(()=>{
+     if(user?.id===recipientId)subscribeNotifications();
+    },delay);
+   }
+  });
+ notificationRealtime=channel;
+}
+            function providerArea(){
+             if(!user)return authView();
+             if(profile?.role!=='prestador')return `<h1>Área profissional</h1>${card('<p class="sub">Sua conta está configurada como cliente. Use uma conta profissional para publicar serviços.</p>')}`;
+             const mine=providers.filter(p=>p.user_id===user.id);
+             const current=mine.find(p=>p.id===selectedProviderId)||mine[0]||null;
+             if(current)selectedProviderId=current.id;
+             let html=`<h1>Área profissional</h1><p class="sub">Gerencie seu perfil profissional, seus serviços e sua disponibilidade.</p>`;
+             if(mine.length>1){
+              html+=card(`<h2>Perfis vinculados à sua conta</h2><p class="sub">Foram encontrados ${mine.length} registros antigos. Selecione qual perfil deseja administrar. Nenhum cadastro foi excluído.</p>${mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId=${arg(p.id)};render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join('')}`);
+             }
+             if(current){
+              const list=services.filter(s=>s.provider_id===current.id);
+              html+=loyaltyView([current.id]);
+              html+=card(`<div class="between"><h2>Meu perfil profissional</h2><span class="tag">${current.available?'Ativo':'Inativo'}</span></div><h3>${esc(current.name)}</h3><p class="sub">${esc(current.category)} · ${esc(current.area||'')}</p><button class="link" onclick="editProviderForm(${arg(current.id)})">Editar meu perfil</button><button class="link" onclick="deleteProvider(${arg(current.id)})">Desativar meu perfil</button><h2>Meus serviços (${list.length})</h2>${list.map(s=>`<div class="service-row"><b>${esc(s.title)}</b><p class="sub">${esc(s.category)} · avulso ${money(s.price)} · 4h ${money(s.half_day_price)} · 8h ${money(s.full_day_price)}</p><button class="link" onclick="editServiceForm(${arg(s.id)})">Editar serviço</button><button class="link" onclick="deleteService(${arg(s.id)})">Desativar serviço</button></div>`).join('')||'<p class="sub">Você ainda não cadastrou serviços.</p>'}<button class="action" onclick="newServiceForm(${arg(current.id)})">+ Adicionar serviço</button>${bookingsLoadError?notice('Não foi possível carregar as contratações: '+bookingsLoadError,'error'):''}<p class="notice">A documentação enviada é privada. O selo Perfil Verificado é liberado quando o Supabase confirma a validação automática. O perfil permanece indisponível enquanto a verificação não estiver confirmada.</p>`);
+             }else{
+              html+=card(`<h2>Meu perfil profissional</h2><p class="sub">Você ainda não cadastrou seu perfil. Preencha seus dados profissionais para começar.</p><button class="action orange" onclick="newProviderForm()">Cadastrar meu perfil profissional</button>`);
+             }
+             html+='<div id="providerEditor"></div><div id="serviceEditor"></div>';
+             return html;
+            }
+            function providerForm(p=null){return card(`<h2>${p?'Editar meu perfil profissional':'Cadastrar meu perfil profissional'}</h2><h3>Informações profissionais</h3><input id="provName" placeholder="Nome profissional" value="${esc(p?.name||profile?.full_name||'')}" required><input id="provCategory" list="cats" placeholder="Categoria principal" value="${esc(p?.category||'')}" required><datalist id="cats">${BASE_CATEGORIES.map(c=>`<option value="${esc(c)}">`).join('')}</datalist><input id="provArea" placeholder="Bairro/região" value="${esc(p?.area||'')}" required><textarea id="provAbout" placeholder="Experiência, especialidades e apresentação">${esc(p?.about||'')}</textarea><h3>Dados para verificação (privados)</h3><input id="docLegalName" placeholder="Nome completo conforme documento" autocomplete="name" required><input id="docCPF" inputmode="numeric" placeholder="CPF (somente números)" maxlength="14" required><input id="docBirth" type="date" aria-label="Data de nascimento" required><input id="docPhone" type="tel" placeholder="Telefone / WhatsApp" autocomplete="tel" required><input id="docAddress" placeholder="Endereço completo" autocomplete="street-address" required><input id="docExperience" placeholder="Tempo de experiência (ex.: 3 anos)"><label class="sub">Foto para análise interna (opcional — nunca aparece no perfil público)</label><input id="docPhoto" type="file" accept="image/jpeg,image/png,image/webp"><label class="sub">Documento de identidade — RG ou CNH</label><input id="docIdentity" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><label class="sub">Comprovante de endereço</label><input id="docAddressProof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><p class="notice">Na primeira solicitação, envie RG/CNH e comprovante. Ao editar, os documentos já enviados são mantidos se você não selecionar novos arquivos. Os dados e arquivos passam por validação automática no Supabase. A validação confere consistência e disponibilidade dos arquivos, mas não comprova autenticidade documental nem realiza biometria. O perfil só fica ativo quando o Supabase confirma o status verificado. A foto, se enviada, fica privada e nunca é exibida no perfil público. O acesso aos documentos depende das permissões privadas do Supabase.</p><h3>Preços de referência</h3><input id="provHalf" type="number" min="0" step=".01" placeholder="Preço referência meia diária" value="${p?.half_day_price??''}"><input id="provFull" type="number" min="0" step=".01" placeholder="Preço referência diária completa" value="${p?.full_day_price??''}"><button class="action" onclick="saveProvider(${arg(p?.id||'')})">Salvar cadastro e verificar automaticamente</button><button class="action secondary" onclick="render()">Cancelar</button>`)}
+            function newProviderForm(){if(!user||profile?.role!=='prestador')return alert('Somente contas profissionais podem cadastrar seu perfil.');if(providers.some(p=>p.user_id===user.id))return alert('Sua conta já possui um perfil profissional. Use “Editar meu perfil” para alterá-lo.');let el=$('providerEditor');if(el){el.innerHTML=providerForm();el.scrollIntoView({behavior:'smooth'})}}
             async function editProviderForm(id){if(!user||profile?.role!=='prestador')return alert('Entre em uma conta profissional para editar.');let p=providers.find(x=>x.id===id&&x.user_id===user.id),el=$('providerEditor');if(!p||!el)return alert('Você não tem permissão para editar este cadastro.');el.innerHTML=providerForm(p);let{data,error}=await db.from('provider_documents').select('legal_name,cpf,birth_date,phone,address,experience').eq('provider_id',id).eq('user_id',user.id).maybeSingle();if(error){console.warn('Não foi possível carregar dados documentais:',error);alert('Não foi possível carregar os dados privados do cadastro: '+error.message);return}if(data){for(let[field,value]of Object.entries({docLegalName:data.legal_name,docCPF:data.cpf,docBirth:data.birth_date,docPhone:data.phone,docAddress:data.address,docExperience:data.experience})){let input=$(field);if(input)input.value=value||''}}}
             async function saveProvider(id=''){
              let uploadedPaths=[],createdProviderId=null,keepUploaded=false,forceUnavailable=false;
@@ -489,7 +493,7 @@
                String(existing.cpf||'').replace(/\D/g,'')!==cpf
               );
               const changed=!!(selectedFiles.identity||selectedFiles.address||selectedFiles.photo||personalChanged);
-              const needsReview=!existing||changed||existing.status!=='verified';
+              const needsVerification=!existing||changed||existing.status!=='verified';
               let pid=id||null;
 
               if(!id){
@@ -518,16 +522,16 @@
                const updated=await db.from('providers').update({
                 user_id:user.id,name:val('provName'),category:val('provCategory'),area:val('provArea'),
                 half_day_price:halfPrice,full_day_price:fullPrice,about:val('provAbout'),
-                available:needsReview?false:(provider.available??false)
+                available:needsVerification?false:(provider.available??false)
                }).eq('id',id).eq('user_id',user.id).select('id').single();
                if(updated.error)throw updated.error;
-               if(needsReview)forceUnavailable=true;
+               if(needsVerification)forceUnavailable=true;
               }
 
               const docPayload={
                provider_id:pid,user_id:user.id,...newPersonal,
                identity_path:identityPath,address_proof_path:addressPath,photo_path:photoPath,
-               ...(needsReview?{status:'pending',submitted_at:new Date().toISOString()}:{})
+               ...(needsVerification?{status:'pending',submitted_at:new Date().toISOString()}:{})
               };
               const saved=await db.from('provider_documents').upsert(docPayload,{onConflict:'provider_id'});
               if(saved.error)throw saved.error;
@@ -539,9 +543,19 @@
                const removed=await db.storage.from('provider-documents').remove(replaced);
                if(removed.error)console.warn('Documentos antigos não removidos do armazenamento:',removed.error);
               }
+              const docCheck=await db.from('provider_documents').select('status').eq('provider_id',pid).eq('user_id',user.id).maybeSingle();
+              if(docCheck.error)throw docCheck.error;
+              const verifyCheck=await db.from('provider_verifications').select('status').eq('provider_id',pid).maybeSingle();
+              if(verifyCheck.error)throw verifyCheck.error;
+              const providerCheck=await db.from('providers').select('available').eq('id',pid).eq('user_id',user.id).single();
+              if(providerCheck.error)throw providerCheck.error;
+              const autoVerified=docCheck.data?.status==='verified'&&verifyCheck.data?.status==='verified'&&providerCheck.data?.available===true;
+              forceUnavailable=!autoVerified;
               await loadProviders();
               selectedProviderId=pid;await render();
-              alert(needsReview?'Cadastro enviado. Seus documentos aguardam análise manual. O perfil ficará indisponível até a aprovação.':'Cadastro atualizado.');
+              alert(autoVerified
+               ? 'Cadastro verificado automaticamente pelo Supabase. Seu perfil está ativo.'
+               : 'Cadastro recebido, mas a validação automática ainda não confirmou todos os requisitos. Seu perfil permanece indisponível. Confira os dados e os documentos enviados.');
              }catch(e){
               if(uploadedPaths.length&&!keepUploaded){
                const cleanup=await db.storage.from('provider-documents').remove(uploadedPaths);
@@ -653,6 +667,7 @@
              }
              document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
              const adminButton=$('adminTab');if(adminButton)adminButton.style.display=isAdmin?'':'none';
+             updateNotificationBadge();
             }
             document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',async()=>{const nextTab=b.dataset.tab;if(nextTab==='admin'&&!isAdmin){tab='home';return render()}if(nextTab!=='chat'){await clearChannel(chatRealtime);chatRealtime=null}tab=nextTab;if(tab==='chat'&&(!activeBooking||!canAccessBooking(bookings.find(x=>x.id===activeBooking))))activeBooking=bookings.find(canAccessBooking)?.id||null;if(tab==='chat'&&activeBooking){await loadMessages();await render();await subscribeChat()}else await render()}));
             db.auth.onAuthStateChange((event,nextSession)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;render()}authQueue=authQueue.then(()=>applyAuthSession(nextSession)).catch(e=>{console.error('Erro ao atualizar autenticação:',e);$('app').innerHTML=notice('Erro ao atualizar sua sessão: '+e.message,'error')})});
