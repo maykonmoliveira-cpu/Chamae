@@ -5,7 +5,7 @@
   "description": "Chamaê - versão Web e Android com Capacitor",
   "scripts": {
     "web": "npx serve www",
-    "build": "echo 'O MVP atual é HTML estático; os arquivos web estão em www/'",
+    "build": "echo 'Chamaê web files are in www/'",
     "cap:sync": "npx cap sync",
     "android": "npx cap open android"
   },
