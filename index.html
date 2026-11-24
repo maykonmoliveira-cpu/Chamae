@@ -259,10 +259,11 @@ function authView(){if(recoveryMode)return '<h1>Redefinir senha</h1><p class="su
              if(!user)return alert('Entre na sua conta para cadastrar serviços.');
              if(profile?.role!=='prestador')return alert('Esta opção é exclusiva para contas profissionais. Entre com uma conta do tipo “Quero oferecer serviços”.');
              const mine=providers.filter(p=>p.user_id===user.id);
-             if(!mine.length){pendingProviderCategory=category;tab='provider';await render();newProviderForm();return;}
              const chosen=mine.find(p=>p.category===category||(Array.isArray(p.categories)&&p.categories.includes(category)));
-             if(!chosen){pendingProviderCategory=category;selectedProviderId=null;tab='provider';await render();newProviderForm(category);return;}
-             selectedProviderId=chosen.id;tab='provider';await render();newServiceForm(chosen.id,category);
+             pendingProviderCategory=category;
+             selectedProviderId=chosen?.id||null;
+             tab='provider';await render();
+             if(chosen)newServiceForm(chosen.id,category);else newProviderForm(category);
             }
             function closeFullScreen(){selected=null;selectedServiceId=null;selectedCategory=null;render()}
             function selectProvider(id){selected=id;selectedServiceId=null;render()}
@@ -461,13 +462,15 @@ async function subscribeNotifications(){
             function providerArea(){
              if(!user)return authView();
              if(profile?.role!=='prestador')return `<h1>Área profissional</h1>${card('<p class="sub">Sua conta está configurada como cliente. Use uma conta profissional para publicar serviços.</p>')}`;
-             const mine=providers.filter(p=>p.user_id===user.id);
-             const current=mine.find(p=>p.id===selectedProviderId)||mine[0]||null;
+             const allMine=providers.filter(p=>p.user_id===user.id);
+             const mine=pendingProviderCategory?allMine.filter(p=>p.category===pendingProviderCategory||(Array.isArray(p.categories)&&p.categories.includes(pendingProviderCategory))):allMine;
+             const current=mine.find(p=>p.id===selectedProviderId)||(pendingProviderCategory?null:mine[0])||null;
              if(current)selectedProviderId=current.id;
              let html=`<h1>Área profissional</h1><p class="sub">Gerencie seu perfil profissional, seus serviços e sua disponibilidade.</p>`;
-             if(mine.length>1){
-              html+=card(`<h2>Perfis vinculados à sua conta</h2><p class="sub">Foram encontrados ${mine.length} registros antigos. Selecione qual perfil deseja administrar. Nenhum cadastro foi excluído.</p>${mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId=${arg(p.id)};render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join('')}`);
+             if(!pendingProviderCategory&&mine.length>1){
+              html+=card(`<h2>Perfis vinculados à sua conta</h2><p class="sub">Selecione qual perfil deseja administrar. Nenhum cadastro foi excluído.</p>${mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId=${arg(p.id)};render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join('')}`);
              }
+             if(pendingProviderCategory){html+=card(`<button class="link" onclick="pendingProviderCategory='';selectedProviderId=null;tab='home';render()">‹ Voltar às profissões</button><h2>${icon(pendingProviderCategory)} ${esc(pendingProviderCategory)}</h2><p class="sub">Este espaço mostra somente o perfil desta profissão.</p>`);}
              
              if(current){
               const list=services.filter(s=>s.provider_id===current.id);
