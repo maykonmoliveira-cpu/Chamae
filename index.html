@@ -104,15 +104,15 @@
   'diarista':'🧹','limpeza':'🧹','faxina':'🧹',
   'manicure':'💅','pedicure':'🦶',
   'eletricista':'⚡','encanador':'🚰',
-  'baba':'🧸','cuidador de idosos':'👵','cuidador de pets':'🐾',
+  'baba':'🧸','cuidador de idosos':'👴','cuidador de pets':'🐶',
   'personal trainer':'🏋️','professor de musica':'🎹','professor de idiomas':'🗣️',
-  'professor particular':'📖','pedreiro':'🧱','jardineiro':'🌱',
+  'professor particular':'📖','pedreiro':'🧱','jardineiro':'🌷',
   'servicos gerais':'🧰','multi servicos':'🛠️','pintor':'🎨',
   'mecanico':'🔧','marceneiro':'🪚','fotografo':'📸'
  };
  if(exact[v])return exact[v];
- if(/cuidador.*pet|pet|animal|passeador|veterin/.test(v))return'🐾';
- if(/idoso|geriat/.test(v))return'👵';
+ if(/cuidador.*pet|pet|animal|passeador|veterin/.test(v))return'🐶';
+ if(/idoso|geriat/.test(v))return'👴';
  if(/bab|bercar/.test(v))return'🧸';
  if(/multi.?serv|faz.?tudo|reparos/.test(v))return'🛠️';
  if(/servicos gerais/.test(v))return'🧰';
@@ -121,7 +121,7 @@
  if(/pedicur/.test(v))return'🦶';
  if(/eletric/.test(v))return'⚡';
  if(/encan|hidraul|desentup/.test(v))return'🚰';
- if(/jardina|paisag/.test(v))return'🌱';
+ if(/jardina|paisag/.test(v))return'🌷';
  if(/pintor|pintura/.test(v))return'🎨';
  if(/pedreir|alvenar|construc|reforma/.test(v))return'🧱';
  if(/mecan|autom/.test(v))return'🔧';
