@@ -99,49 +99,6 @@
             function notice(s,k='notice'){return `<div class="${k}">${esc(s)}</div>`}
             function dateToday(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
             function icon(c=''){c=String(c).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();if(/diarist|limpeza|faxin/.test(c))return'🧹';if(/manicur|unha/.test(c))return'💅';if(/eletric/.test(c))return'⚡';if(/encan|hidraul/.test(c))return'🔧';if(/cuidador.*pet|pet|animal/.test(c))return'🐶';if(/idoso/.test(c))return'👴';if(/bab|cuidador/.test(c))return'🧸';if(/jardina/.test(c))return'🌷';if(/pintor/.test(c))return'🖌️';if(/pedreir|reforma/.test(c))return'🧱';if(/mecan|autom/.test(c))return'🚗';if(/fotograf/.test(c))return'📷';if(/personal/.test(c))return'🏋️';if(/professor|aula/.test(c))return'📚';return'🧰'}
- const v=String(c).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
- const exact={
-  'diarista':'🧹','limpeza':'🧹','faxina':'🧹',
-  'manicure':'💅','pedicure':'🦶',
-  'eletricista':'⚡','encanador':'🚰',
-  'baba':'🧸','cuidador de idosos':'👴','cuidador de pets':'🐶',
-  'personal trainer':'🏋️','professor de musica':'🎹','professor de idiomas':'🗣️',
-  'professor particular':'📖','pedreiro':'🧱','jardineiro':'🌷',
-  'servicos gerais':'🧰','multi servicos':'🛠️','pintor':'🎨',
-  'mecanico':'🔧','marceneiro':'🪚','fotografo':'📸'
- };
- if(exact[v])return exact[v];
- if(/cuidador.*pet|pet|animal|passeador|veterin/.test(v))return'🐶';
- if(/idoso|geriat/.test(v))return'👴';
- if(/bab|bercar/.test(v))return'🧸';
- if(/multi.?serv|faz.?tudo|reparos/.test(v))return'🛠️';
- if(/servicos gerais/.test(v))return'🧰';
- if(/diarist|limpeza|faxin|passad/.test(v))return'🧹';
- if(/manicur|unha|salao|cabeleire|barbeir|estetic/.test(v))return'💅';
- if(/pedicur/.test(v))return'🦶';
- if(/eletric/.test(v))return'⚡';
- if(/encan|hidraul|desentup/.test(v))return'🚰';
- if(/jardina|paisag/.test(v))return'🌷';
- if(/pintor|pintura/.test(v))return'🎨';
- if(/pedreir|alvenar|construc|reforma/.test(v))return'🧱';
- if(/mecan|autom/.test(v))return'🔧';
- if(/motorist|frete|mudanca|entrega/.test(v))return'🚚';
- if(/fotograf|filmagem|video/.test(v))return'📸';
- if(/personal|academ|educador fisico/.test(v))return'🏋️';
- if(/musica|instrument|cantor/.test(v))return'🎹';
- if(/idioma|lingua|tradutor/.test(v))return'🗣️';
- if(/professor|aula|reforco escolar/.test(v))return'📖';
- if(/marceneir|moveis|carpinteir/.test(v))return'🪚';
- if(/costur|alfaiat/.test(v))return'🧵';
- if(/informat|computador|celular|tecnologia/.test(v))return'💻';
- if(/cozin|chef|buffet/.test(v))return'🍳';
- if(/vidraceir|vidro/.test(v))return'🪟';
- if(/serralheir|solda/.test(v))return'🛠️';
- if(/contador|contabil|financeir/.test(v))return'🧾';
- if(/advog|juridic/.test(v))return'⚖️';
- if(/saude|enfermag|fisioterap|massag/.test(v))return'🩺';
- return'✨';
-}
             async function clearChannel(ch){if(ch)try{await db.removeChannel(ch)}catch(e){console.warn('Falha ao encerrar canal realtime:',e)}}
             async function clearRealtime(){await Promise.all([clearChannel(chatRealtime),clearChannel(bookingRealtime),clearChannel(notificationRealtime)]);chatRealtime=bookingRealtime=notificationRealtime=null}
             async function loadProfile(){if(!user)return;let{data,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();if(error)throw error;profile=data}
