@@ -98,7 +98,7 @@
             function btn(t,fn,k=''){return `<button class="action ${k}" onclick="${fn}">${t}</button>`}
             function notice(s,k='notice'){return `<div class="${k}">${esc(s)}</div>`}
             function dateToday(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-            function icon(c=''){
+            function icon(c=''){c=String(c).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();if(/diarist|limpeza|faxin/.test(c))return'🧹';if(/manicur|unha/.test(c))return'💅';if(/eletric/.test(c))return'⚡';if(/encan|hidraul/.test(c))return'🔧';if(/cuidador.*pet|pet|animal/.test(c))return'🐶';if(/idoso/.test(c))return'👴';if(/bab|cuidador/.test(c))return'🧸';if(/jardina/.test(c))return'🌷';if(/pintor/.test(c))return'🖌️';if(/pedreir|reforma/.test(c))return'🧱';if(/mecan|autom/.test(c))return'🚗';if(/fotograf/.test(c))return'📷';if(/personal/.test(c))return'🏋️';if(/professor|aula/.test(c))return'📚';return'🧰'}
  const v=String(c).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
  const exact={
   'diarista':'🧹','limpeza':'🧹','faxina':'🧹',
