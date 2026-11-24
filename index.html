@@ -6,8 +6,8 @@
             <meta name="theme-color" content="#124B91">
             <meta name="apple-mobile-web-app-capable" content="yes">
             <meta name="apple-mobile-web-app-title" content="Chamaê">
-            <title>Chamaê — Versão 1.0.0</title>
-            <meta name="application-version" content="1.0.0">
+            <title>Chamaê — Versão 1.0.1</title>
+            <meta name="application-version" content="1.0.1">
             <style>
             :root{--blue:#124B91;--orange:#F07822;--bg:#F4F7FB;--muted:#65758B;--line:#E3EAF2;--green:#168653;--red:#B42318}
             *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172B45}
@@ -83,7 +83,7 @@
             const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
             const $=id=>document.getElementById(id);
             const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-            let session=null,user=null,profile=null,tab='home',selected=null,selectedServiceId=null,selectedCategory=null,selectedProviderId=null,activeBooking=null;
+            let session=null,user=null,profile=null,tab='home',selected=null,selectedServiceId=null,selectedCategory=null,selectedProviderId=null,activeBooking=null;let cancelledCleanupAttempted=false;
             let providers=[],services=[],bookings=[],messages=[],notifications=[],ratedBookingIds=[],loyaltyBonuses=[],loyaltyProgress={};let providersLoadError='',servicesLoadError='';
             let favorites=[];try{favorites=JSON.parse(localStorage.getItem('chamae_favorites')||'[]');if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}
             let chatRealtime=null,bookingRealtime=null,notificationRealtime=null;
@@ -117,7 +117,7 @@
             }
             async function loadProviders(){let{data,error}=await db.from('providers').select('id,user_id,name,category,area,rating,half_day_price,full_day_price,about,available').order('created_at',{ascending:false});if(error){console.warn('Falha ao carregar profissionais:',error);providers=[];providersLoadError=error.message||'Não foi possível carregar os profissionais.'}else{providers=data||[];providersLoadError=''}}
             async function loadServices(){let{data,error}=await db.from('services').select('*').order('created_at',{ascending:false});if(error){console.warn('Falha ao carregar serviços:',error);services=[];servicesLoadError=error.message||'Não foi possível carregar os serviços.'}else{services=data||[];servicesLoadError=''}}
-            async function loadBookings(){if(!user){bookings=[];bookingsLoadError='';return}let{data,error}=await db.from('bookings').select('*').order('created_at',{ascending:false});if(error){console.warn(error);bookings=[];bookingsLoadError=error.message||'Falha ao carregar contratações.'}else{bookings=data||[];bookingsLoadError=''}}
+            async function loadBookings(){if(!user){bookings=[];bookingsLoadError='';return}if(!cancelledCleanupAttempted){cancelledCleanupAttempted=true;const cleanup=await db.from('bookings').delete().eq('status','cancelled').select('id');if(cleanup.error)console.warn('Não foi possível excluir todos os serviços cancelados:',cleanup.error)}let{data,error}=await db.from('bookings').select('*').neq('status','cancelled').order('created_at',{ascending:false});if(error){console.warn(error);bookings=[];bookingsLoadError=error.message||'Falha ao carregar contratações.'}else{bookings=data||[];bookingsLoadError=''}}
             async function loadNotifications(){if(!user){notifications=[];return}let{data,error}=await db.from('notifications').select('*').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(30);if(error){console.warn('Falha ao carregar notificações:',error);notifications=[];notificationLoadError=error.message||'Não foi possível carregar as notificações.'}else{notifications=data||[];notificationLoadError=''}}
             async function loadRated(){ratedBookingIds=[];let ids=bookings.filter(b=>b.client_id===user?.id&&b.status==='completed').map(b=>b.id);if(!ids.length)return;let{data,error}=await db.from('ratings').select('booking_id').in('booking_id',ids);if(!error)ratedBookingIds=(data||[]).map(x=>x.booking_id)}
             async function loadLoyalty(){loyaltyBonuses=[];loyaltyProgress={};if(!user||profile?.role!=='prestador')return;let ids=providers.filter(p=>p.user_id===user.id).map(p=>p.id);if(!ids.length)return;let{data,error}=await db.from('provider_loyalty_bonuses').select('*').in('provider_id',ids).order('created_at',{ascending:false});if(error){console.warn(error);return}loyaltyBonuses=data||[];let{data:r,error:re}=await db.from('ratings').select('booking_id,provider_id').in('provider_id',ids).eq('score',5);if(re)return;let bookingIds=[...new Set((r||[]).map(x=>x.booking_id))],completed=[];if(bookingIds.length){let q=await db.from('bookings').select('id,provider_id').in('id',bookingIds).eq('status','completed');completed=q.data||[]}for(let id of ids){let n=completed.filter(b=>b.provider_id===id).length;loyaltyProgress[id]={total:n,completed:n%10,remaining:10-n%10}}}
