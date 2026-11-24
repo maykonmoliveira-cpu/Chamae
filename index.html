@@ -346,7 +346,10 @@ function authView(){if(recoveryMode)return '<h1>Redefinir senha</h1><p class="su
               alert('Avaliação enviada. Obrigado!');
              }catch(e){console.error('Erro ao enviar avaliação:',e);alert('Não foi possível enviar a avaliação: '+(e.message||e))}
             }
-            function notificationsView(){
+            function isCancellationNotification(n){
+ return /cancelad[oa]|cancelamento/i.test(String(n.title||'')+' '+String(n.body||''));
+}
+function notificationsView(){
  const unread=notifications.filter(n=>!n.read_at).length;
  return card(`<div class="between"><h2>Notificações</h2><span class="tag">${unread} não lida(s)</span></div>
  ${notificationLoadError?notice(notificationLoadError,'error'):''}
@@ -354,7 +357,17 @@ function authView(){if(recoveryMode)return '<h1>Redefinir senha</h1><p class="su
  <b>${esc(n.title)}</b><p class="sub">${esc(n.body)}</p>
  <small class="sub">${new Date(n.created_at).toLocaleString('pt-BR')}</small>
  <p class="sub">${n.read_at?'Lida':'Toque para abrir a contratação relacionada'}</p>
+ ${isCancellationNotification(n)?`<button type="button" class="action danger" style="width:auto;padding:8px 13px;margin-top:4px" onclick="event.stopPropagation();deleteNotification(${arg(n.id)})">Excluir notificação</button>`:''}
  </div>`).join('')||'<p class="sub">Nenhuma notificação.</p>'}`)}
+async function deleteNotification(id){
+ if(!user)return alert('Entre na sua conta novamente.');
+ const n=notifications.find(x=>x.id===id&&x.recipient_id===user.id);
+ if(!n||!isCancellationNotification(n))return alert('Somente notificações de cancelamento podem ser excluídas por esta opção.');
+ if(!confirm('Excluir esta notificação de cancelamento? Esta ação não pode ser desfeita.'))return;
+ const{error}=await db.from('notifications').delete().eq('id',id).eq('recipient_id',user.id);
+ if(error){console.error('Erro ao excluir notificação:',error);return alert('Não foi possível excluir a notificação: '+error.message);}
+ await loadNotifications();await render();
+}
 async function markRead(id){
  if(!user)return;
  const {error}=await db.from('notifications').update({read_at:new Date().toISOString()})
