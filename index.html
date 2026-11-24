@@ -468,7 +468,7 @@ async function subscribeNotifications(){
              if(mine.length>1){
               html+=card(`<h2>Perfis vinculados à sua conta</h2><p class="sub">Foram encontrados ${mine.length} registros antigos. Selecione qual perfil deseja administrar. Nenhum cadastro foi excluído.</p>${mine.map(p=>`<button class="option ${current?.id===p.id?'selected':''}" onclick="selectedProviderId=${arg(p.id)};render()"><b>${esc(p.name)}</b><div class="sub">${esc(p.category)} · ${esc(p.area||'')}</div></button>`).join('')}`);
              }
-             if(mine.length){html+=card(`<h2>Outra profissão?</h2><p class="sub">Cada profissão tem seu próprio perfil, serviços, preços e verificação. Você pode administrar todos com esta mesma conta.</p><button class="action orange" onclick="newProviderForm()">+ Cadastrar perfil de outra profissão</button>`)}
+             
              if(current){
               const list=services.filter(s=>s.provider_id===current.id);
               html+=loyaltyView([current.id]);
