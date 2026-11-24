@@ -692,9 +692,10 @@ async function subscribeNotifications(){
              }
              document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
              const adminButton=$('adminTab');if(adminButton)adminButton.style.display=isAdmin?'':'none';
+             const providerButton=document.querySelector('nav button[data-tab="provider"]');if(providerButton)providerButton.style.display=profile?.role==='prestador'?'':'none';
              updateNotificationBadge();
             }
-            document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',async()=>{const nextTab=b.dataset.tab;if(nextTab==='admin'&&!isAdmin){tab='home';return render()}if(nextTab!=='chat'){await clearChannel(chatRealtime);chatRealtime=null}tab=nextTab;if(tab==='chat'&&(!activeBooking||!canAccessBooking(bookings.find(x=>x.id===activeBooking))))activeBooking=bookings.find(canAccessBooking)?.id||null;if(tab==='chat'&&activeBooking){await loadMessages();await render();await subscribeChat()}else await render()}));
+            document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',async()=>{const nextTab=b.dataset.tab;if(nextTab==='admin'&&!isAdmin){tab='home';return render()}if(nextTab==='provider'&&profile?.role!=='prestador'){tab='home';return render()}if(nextTab!=='chat'){await clearChannel(chatRealtime);chatRealtime=null}tab=nextTab;if(tab==='chat'&&(!activeBooking||!canAccessBooking(bookings.find(x=>x.id===activeBooking))))activeBooking=bookings.find(canAccessBooking)?.id||null;if(tab==='chat'&&activeBooking){await loadMessages();await render();await subscribeChat()}else await render()}));
             db.auth.onAuthStateChange((event,nextSession)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;render()}authQueue=authQueue.then(()=>applyAuthSession(nextSession)).catch(e=>{console.error('Erro ao atualizar autenticação:',e);$('app').innerHTML=notice('Erro ao atualizar sua sessão: '+e.message,'error')})});
             async function init(){const{data,error}=await db.auth.getSession();if(error)throw error;authQueue=authQueue.then(()=>applyAuthSession(data.session));await authQueue}
             init().catch(e=>{$('app').innerHTML=notice('Erro ao iniciar o Chamaê: '+e.message,'error')});
